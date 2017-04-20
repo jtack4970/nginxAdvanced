@@ -256,7 +256,7 @@ server {
 		  <aside class ="notes">
 		  	<ol>
 		  	<li>Open /etc/nginx/conf.d and rename the default.conf to default.conf.bak</li>
-<li>Create a file called server1.conf in the conf.d folder in /etc/nginx</li>
+<li>Create a file called main.conf in the conf.d folder in /etc/nginx</li>
 <li>Add two location blocks that match requests for /application1 and /application2</li>
 <li>Add a third location block that matches requests for /images</li>
 <li>Override the root directive in the /images location block to specify the folder where your images are stored (i.e /data/images)</li>
@@ -513,9 +513,40 @@ error_page 500 502 503 504 /custom_50x.html;
 		    <li>Reload NGINX, test your ec2-url and custom pages</li>
 		  </ol>
 		  <aside class ="notes">
-		  	<ol>
-		  	
-</ol>
+		  	<pre><code class="linux" data-trim contenteditable>
+		  	upstream myServers {
+    zone http_backend 64k;
+
+    server server:8080 route=backend1;
+    server server:8080 route=backend2;
+    server server:8080 route=backend3;
+}
+
+server {
+    listen 80;
+    listen [::]:80 default_server ipv6only=on;
+    error_log /var/log/nginx/main.error.log info;
+    access_log /var/log/nginx/main.access.log combined;
+
+    error_page 404 /custom_404.html;
+    error_page 500 502 503 504 /custom_50x.html;
+
+    location / {
+        proxy_pass http://myServers/;
+    }
+
+    location = /custom_404.html {
+        internal;
+    }
+
+    location = /custom_50x.html {
+        internal;
+    }
+
+    location /test {
+        fastcgi_pass unix:/null/path;
+    }
+    </code></pre>
 </aside>
 
 		</section>
@@ -759,9 +790,10 @@ add_header X-Frame-Options DENY;
 		    	$ certbot certonly --standalone -d ec2-url.com -d www.ec2-url.com
 		    </code></pre>
 		  </ol>
+		  <p></p>
+		  <div style="text-align:center;"><small>Documentation: <a href="https://certbot.eff.org/#ubuntuxenial-nginx" target="_blank">Certbot Installation</a></small></div>
 		  <aside class ="notes">
-		  	<ol>
-		  	</ol>
+		  	<p>Instructions: <a href "https://certbot.eff.org/#ubuntuxenial-nginx" target="_blank"> Link</a></p>
 
 </aside>
 
@@ -821,8 +853,26 @@ add_header X-Content-Type-Options nosniff;
 </code></pre>
 		  </ol>
 		  <aside class ="notes">
-		  	<ol>
-		  	</ol>
+		  	<pre><code class="linux" data-trim contenteditable>
+		  	server {
+    listen 80;
+    listen [::]:80 default_server ipv6only=on;
+    error_log /var/log/nginx/main.error.log info;
+    access_log /var/log/nginx/main.access.log combined;
+    return 301 https://$host$request_uri;
+    status_zone redirect;
+}
+
+server {
+    listen 443 ssl;
+    root /usr/share/nginx/html;
+    error_log /var/log/nginx/upstream.error.log info;
+    access_log /var/log/nginx/upstream.access.log combined;
+
+    include /etc/nginx/conf.d/ssl.params.conf;
+    ...
+}
+</code></pre>
 </aside>
 		</section>
 
@@ -1069,11 +1119,11 @@ With the new SSL server name preread feature, NGINX Plus R11 can inspect each 
 		  <h3>Lab 3.1: Create TCP Upstream</h3>
 		  <ol>
 		    <li>In the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tcp</span></pre> directory, create/open <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">lb.conf</span></pre></li>
-		    <li>Create a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre> that listens on port <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">90</span></pre> and proxies to <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">stream_backend</span></pre></li>
+		    <li>Create a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre> that listens on port <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">90</span></pre> and proxies to <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tcp_backend</span></pre></li>
 		    <pre><code class="linux" data-trim contenteditable>
 		    	stream {
-    upstream stream_backend {
-        zone upstream_backend 64k;
+    upstream tcp_backend {
+        zone tcp_upstream 64k;
         server backend1:8080;
         server backend2:8080;
         server backend3:8080;
@@ -1081,7 +1131,7 @@ With the new SSL server name preread feature, NGINX Plus R11 can inspect each 
 
     server {
         listen 90;
-        proxy_pass stream_backend;
+        proxy_pass tcp_backend;
     }
 }
 
@@ -1097,10 +1147,10 @@ With the new SSL server name preread feature, NGINX Plus R11 can inspect each 
 		  <h3>Lab 3.2: Create a UDP Upstream</h3>
 		  <ol>
 		    <li>Create a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre> that listens on <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">53</span></pre>, and append the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">udp</span></pre> parameter</li>
-		    <li>Use a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">proxy_pass</span></pre> to proxy to a new <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream udp_upstream</span></pre></li>
+		    <li>Use a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">proxy_pass</span></pre> to proxy to a new <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream udp_backend</span></pre></li>
 		     <pre><code class="linux" data-trim contenteditable>
  upstream udp_backend {
-        zone udp_servers 64k;
+        zone udp_upstream 64k;
         server ec-2:53;
         server ec-2:53;
         server ec-2:53;
@@ -1134,23 +1184,6 @@ With the new SSL server name preread feature, NGINX Plus R11 can inspect each 
 		<aside class="notes"></aside>
 	</section>
 
-	<section>
-		<h3>Health Check Example</h3>
-		<pre><code class="linux" data-trim contenteditable>
-			match http { 
-	send "GET / HTTP/1.0\r\nHost: localhost\r\n\r\n"; 
-	expect ~* "200 OK"; 
-} 
-server { 
-	listen 12345; 
-	health_check match=http; 
-	proxy_pass stream_backend; 
-}
-
-		</code></pre>
-		<aside class="notes"></aside>
-	</section>
-
 
 		<section data-state="lab">
 		  <h3>Lab 3.3: TCP Health Check</h3>
@@ -1167,13 +1200,52 @@ server {
     server {
         listen 90;
         health_check interval=10 passes=5 fails=5 match=http;
-        proxy_pass stream_backend;
+        proxy_pass tcp_backend;
     }
 		    </code></pre>
 		  </ol>
 		  <aside class ="notes">
-		  	<ol>
-		  	</ol>
+		  	<h4>COMPLETE EXAMPLE</h4>
+		 <pre><code class="linux" data-trim contenteditable>
+stream {
+
+    #Logging only supported in NGINX Version 1.11.5 or higher
+    log_format basic " '$remote_addr [$time_local]' '$protocol $status $bytes_sent $bytes_received''$session_time";
+
+    upstream tcp_backend {
+        zone tcp_upstream 64k;
+        server server:8080;
+        server server:8080;
+        server server:8080;
+    }
+
+    upstream udp_backend {
+        zone udp_upstream 64k;
+        server server:53;
+        server server:53;
+        server server:53;
+    }
+
+    match http {
+        send "GET / HTTP/1.0\r\nHost: localhost:8080\r\n\r\n";
+        expect ~* "200 OK";
+     }
+
+    server {
+        listen 90;
+        access_log /var/log/nginx/nginx_tcp_access.log basic buffer=32k;
+        error_log /var/log/nginx/nginx_tcp_error.log info;
+        health_check interval=10 passes=5 fails=5 match=http;
+        proxy_pass tcp_backend;
+    }
+
+    server {
+        listen 53;
+        proxy_pass udp_backend;
+    }
+}
+
+		 </code></pre>
 
 </aside>
 		</section>
@@ -1416,7 +1488,7 @@ sudo curl -L -O \
 <section>
 		<h3>Alerts</h3>
 		<ul>
-		<li>Alert message can inform you when the value of a certain metric goes outside a specified range</li>
+		<li>Alert messages can inform you when the value of a certain metric goes outside a specified range</li>
 <li>NGINX Amplify Alert Limitations:</li>
 <li>Alerts based on summaries or averages across systems</li>
 <li>Alerts are not filtered by hostname by default</li>
@@ -1446,15 +1518,13 @@ sudo curl -L -O \
 <section data-state="lab">
 		  <h3>Lab 5.3: Create an Alert</h3>
  <ol>
-		  	<li>On the Alerts page, click the Add new alert </li>
-<li>In the Create new alert dialog box, Click the drop‑down menu labeled Click to select metric</li>
-<li>Click on a Metric or type in a text string</li>
-<li>Based on your metric more fields will appear, for this exercise choose the nginx.http.status.4xx metric</li>
+<li>On the Alerts page, select "Add New Alert"</li>
+<li>In the new dialog box, select a metric from the drop‑down menu or type in a text string</li>
+<li>Based on your metric more fields will appear, for this exercise choose the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx.http.status.4xx</span></pre> metric</li>
 <li>Choose a threshold of 2 minutes</li>
-<li>Choose the System you wish to apply the alert</li>
-<li>Enter your email address to receive the notification</li>
-<li>Click Create Alert</li>
-<li>Test $uri.html and refresh the webpage enough times to exceed the threshold. An alert message should’ve been sent to your email. Check your spam folder if you do not see straight away</li>
+<li>Choose the System you which to apply the alert</li>
+<li>Enter your email address to receive the notification and click "Create Alert"</li>
+<li>Test <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ec2-server/123.html</span></pre> and refresh the webpage enough times to exceed the threshold. An alert message should’ve been sent to your email.</li>
 
 		  </ol>
 		
@@ -1679,8 +1749,10 @@ Each and every request has to go through the SSL negotiation process – even if
 		<aside class="notes">
 <p>So let’s look in detail of the how the Fabric model works between microservices
 The first thing you will notice is that NGINX Plus runs in each service and the application code talks locally to NGINX Plus
-Because these are localhost network connections, FastCGI or even file socket connections, they don’t need to be encrypted
-You will also notice that NGINX Plus is connecting to the other microservices NGINX Plus instances
+Because these are localhost network connections, FastCGI or even file socket connections, they don’t need to be encrypted</p>
+<p>
+You will also notice that NGINX Plus is connecting to the other microservices NGINX Plus instances</p>
+<p>
 Finally you will notice that NGINX Plus is connecting to service registry to do service discovery
 We will go through each of these steps in detail in just a moment</p>
 
@@ -1691,12 +1763,13 @@ We will go through each of these steps in detail in just a moment</p>
 		<h3>Service Discovery</h3>
 		<center><img src="assets/images/serviceDiscovery.png" style="border:0; background:none; width:68%"></center>
 		<aside class="notes">
-<p>Having NGINX Plus deal with service discovery is beneficial on a bunch of levels:
-You use DNS which is a service discovery mechanism that is very clear and well understood by developers
-NGINX Plus has an asynchronous resolver that can query the service resolver on a user definable frequency, say every couple of seconds
-Because it is asynchronous and non-blocking, request and response processing continues to happen even as service instances are added and subtracted from the load balancing tool
-NGINX Plus as of R9 can also resolve SRV records so that you can optimally use and deploy your resources on your cluster instances
-</p>
+<p>Having NGINX Plus deal with service discovery is beneficial on a bunch of levels:</p>
+<ul>
+	<li>You use DNS which is a service discovery mechanism that is very clear and well understood by developers</li>
+<li>NGINX Plus has an asynchronous resolver that can query the service resolver on a user definable frequency, say every couple of seconds</li>
+<li>Because it is asynchronous and non-blocking, request and response processing continues to happen even as service instances are added and subtracted from the load balancing tool</li>
+<li>NGINX Plus as of R9 can also resolve SRV records so that you can optimally use and deploy your resources on your cluster instances</li>
+</ul>
 		</aside>
 	</section>
 
@@ -1705,22 +1778,25 @@ NGINX Plus as of R9 can also resolve SRV records so that you can optimally use a
 		<center><img src="assets/images/lbProcess.png" style="border:0; background:none; width:68%"></center>
 		<aside class="notes">
 <h4>Load Balancing</h4>
-<p>When NGINX Plus gets back the list of User Manager instances, it puts them in the load balancing pool to distribute requests
-NGINX has a variety of load balancing schemes that are user definable
-Least time balancing will send data to the fast responding service, whether you choose header response or full data response
-If your system has to connect to a monolith or stateful system, we have connection persistence to make sure requests go back to the proper instance
-</p>
+<p>When NGINX Plus gets back the list of User Manager instances, it puts them in the load balancing pool to distribute requests</p>
+<p>NGINX has a variety of load balancing schemes that are user definable</p>
+<ul>
+<li>Least time balancing will send data to the fast responding service, whether you choose header response or full data response</li>
+<li>If your system has to connect to a monolith or stateful system, we have connection persistence to make sure requests go back to the proper instance</li>
+</ul>
 
 <h4>Persistent SSL</h4>
-<p>But here is where the real benefit comes in – stateful, persistent connections between microservices
-Remember the first diagram and how the service instance goes through the process of 
-Creating an HTTP client
-Negotiating the SSL connection
-Making the request 
-Closing down the connection
-Here NGINX creates a connection to the other microservices and, using keepalive connection functionality, maintains that connection across application code requests
-Essentially, there are mini VPNs that are created from service to service
-In our initial testing we have seen a 77% increase in connection speed
+<p>But here is where the real benefit comes in – stateful, persistent connections between microservices</p>
+<p>Remember the first diagram and how the service instance goes through the process of:</p>
+<ul>
+<li>Creating an HTTP client</li>
+<li>Negotiating the SSL connection</li>
+<li>Making the request</li>
+<li>Closing down the connection</li>
+</ul>
+<p>Here NGINX creates a connection to the other microservices and, using keepalive connection functionality, maintains that connection across application code requests</p>
+<p>Essentially, there are mini VPNs that are created from service to service</p>
+<p>In our initial testing we have seen a 77% increase in connection speed
 </p>
 		</aside>
 	</section>
