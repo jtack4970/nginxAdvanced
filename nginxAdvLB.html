@@ -409,7 +409,15 @@ location / {
 	proxy_pass http://default_backend; 
 }
 </code></pre>
-			<aside class="notes"></aside>
+			<aside class="notes">
+				<p>
+Rewriting the response body is often done along with request routing, to change links in the response body to reflect the new URI structure created by the request routing. It can also be used to make other changes to the response body before it’s sent to the client.
+To rewrite HTTP responses with NGINX Plus, use the sub_filter directive. It takes two parameters: the string for NGINX Plus to search for and replace, and the replacement string.</p>
+
+<p>This example searches through the response body for links containing the /mp3/ directory element and replace it with /music/ </p>
+
+
+			</aside>
 		</section>
 	</section>
 
@@ -445,7 +453,23 @@ if ($args ~ post=140){
 	rewrite ^ http://example.com/ permanent; 
 }
 			</code></pre>
-			<aside class="notes"></aside>
+			<aside class="notes">
+
+<p>With the If Directive the specified nested condition is evaluated. If it’s true, the directives specified inside those braces are executed, and that initial request is assigned to the configuration details inside the if directive.</p>
+
+<p>It’s worth mentioning here that configurations inside the if directives are inherited from the previous configuration level, so you can basically thinkg of an if directive as a nested location</p>
+
+<p>This is where the problems begin, if the 'if' directive has problems when used in a location context, in some cases it doesn’t do what you expect but rather something completely different instead.</p> 
+<p>In some cases it even segfaults. (i.e. segmentation fault (aka segfault)</p>
+ This is common condition with systems under significant load and will cause programs to crash; they are often associated with a file named core . Segfaults are caused by a program trying to read or write an illegal memory location) It’s generally a good idea to avoid this if possible.</p>
+
+<p>There are cases where you simply cannot avoid using an if, for example, if you need to test a variable which has no equivalent directive, like in this example which tests the condition of a Post request and returns a internal redirect code, or if an argument equals a certain post value and then the url can be rewritten as a permanent redirect.</p>
+
+<p>It is important to note that the behaviour of if is not inconsistent, given two identical requests it will not randomly fail on one and work on the other, with proper testing and understanding ifs ‘’‘can’‘’ be used. It’s recommend to thoroughly read through the two links posted in this slide but if you’re in doubt one should use the return, rewrite, or try_files directives instead.</p>
+
+<p>What we should do instead is use the try_files directive</p>
+
+			</aside>
 		</section>
 
 		<section>
@@ -464,7 +488,20 @@ location @proxy {
 	proxy_pass http://backend/index.php;
 }
 </code></pre>
-			<aside class="notes"></aside>
+			<aside class="notes">
+<p>Like the return and rewrite directives, the try_files directive is placed in a server or locationblock. As parameters, it takes a list of one or more files and directories and a final URI:</p>
+
+<p>try_files file … uri;</p>
+
+<p>NGINX checks for the existence of the files and directories in order (constructing the full path to each file from the settings of the root and alias directives), and serves the first one it finds. To indicate a directory, add a slash at the end of the element name. If none of the files or directories exist, NGINX performs an internal redirect to the URI defined by the final element (uri).</p>
+<p>For the try_files directive to work, you also need to define a location block that captures the internal redirect, as shown in the following example. The final element can be a named location, indicated by an initial at‑sign (@).</p>
+
+<p>The try_files directive commonly uses the $uri variable, which represents the part of the URL after the domain name.</p>
+
+<p>In the following example, NGINX serves a default GIF file if the file requested by the client doesn’t exist. When the client requests (for example) http://www.domain.com/images/image1.gif, NGINX first looks for image1.gif in the local directory specified by the root or alias directive that applies to the location (not shown in the snippet). If image1.gif doesn’t exist, NGINX looks for image1.gif/, and if that doesn’t exist, it redirects to /images/default.gif. That value exactly matches the second location directive, so processing stops and NGINX serves that file and marks it to be cached for 30 seconds.</p>
+
+
+			</aside>
 		</section>
 	</section>
 
@@ -634,7 +671,11 @@ server  {
 
 </code></pre>
 
-	<aside class="notes"></aside>
+	<aside class="notes">
+<p>By default, Nginx will use the default DHE (Ephemeral Diffie-Hellman) paramaters provided by openssl. This uses a weak key that gets lower scores. The best thing to do is build your own. You can create a 2048 bit key, but it's better to toss a 4096 at NGINX. It will take a very long time to create, so there should be an existing one in your ssl directory.</p>
+
+<p>After you've build the key, go ahead and reference it using the ssl_dhparam directive</p>
+	</aside>
 </section>
 
 <section>
@@ -656,7 +697,12 @@ server  {
 }
 
 </code></pre>
-	<aside class="notes"></aside>
+	<aside class="notes">
+<p>The best place to start with securing your website is protocol support. It's a given that you shouldn't be using SSLv2. It should also be a given that you should no longer be using SSLv3. The recent POODLE vulnerability pretty much put the final knife in it.</p>
+<p>This means you should only support the TLS protocols.</p>
+<p>If you want a "perfect" score however, you should only use TLSv1.2</p>
+
+	</aside>
 </section>
 
 <section>
@@ -679,7 +725,9 @@ server  {
     ssl_prefer_server_ciphers on;
 }
 	</code></pre>
-	<aside class="notes"></aside>
+	<aside class="notes">
+<p>This one especially is ever changing. What's best today, may not be so hot tomorrow. Here, you'll have a battle between high security and compatibility. Keeping with the topic of this module, we should care about security only.</p>
+	</aside>
 </section>
 
 <section>
@@ -705,8 +753,9 @@ server  {
 }
 </code></pre>
 	<aside class="notes">
+		<p>SSL Stapling doesn't exactly make you any more secure, but it does help the client significantly. In short, you help the client by telling them they can use your server for OCSP information for your domain instead of letting the browser make the request to an often unreliable outside resource.</p> <p>In more technical terms what's happening here is:</p>
 <ul>
-		<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ssl_stapling</span></pre> ”staples” an OCSP response to the initial TLS handshake, thus relieving the client from having to contact the CA</li>
+		<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ssl_stapling</span></pre>  directive will ”staples” an OCSP response to the initial TLS handshake, thus relieving the client from having to contact the CA</li>
 <li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ssl_stapling_verify</span></pre>	Enables verification of OCSP responses by the server rather than the client</li>
 <li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ssl_trusted_certificate</span></pre> must be used in order for stapling to work. This ticket must contain the intermediate & root certificates (in that order from top to bottom). This ticket is usually indicated by the .pem extension</li>
 </ul>
@@ -939,7 +988,11 @@ server {
 		 	</ul>
 		  </div>
 
-		<aside class="notes"></aside>
+		<aside class="notes">
+<p>Layer 7: operates at the high-level application layer, which deals with the actual content of each message. HTTP is the predominant Layer 7 protocol for website traffic on the Internet. Layer 7 load balancers route network traffic in a much more sophisticated way than Layer 4 load balancers, particularly applicable to TCP-based traffic such as HTTP. A Layer 7 load balancer terminates the network traffic and reads the message within. It can make a load-balancing decision based on the content of the message (the URL or cookie, for example). It then makes a new TCP connection to the selected upstream server (or reuses an existing one, by means of HTTP keepalives) and writes the request to the server.</p>
+
+<p>Layer 4: operates at the intermediate transport layer, which deals with delivery of messages with no regard to the content of the messages. Transmission Control Protocol (TCP) is the Layer 4 protocol for Hypertext Transfer Protocol (HTTP) traffic on the Internet. Layer 4 load balancers simply forward network packets to and from the upstream server without inspecting the content of the packets. They can make limited routing decisions by inspecting the first few packets in the TCP stream.</p>
+		</aside>
 	</section>
 
 <section>
@@ -975,7 +1028,37 @@ server {
 }
 	</code></pre>
 		<aside class="notes">
-<p>In this situation we have NGINX Plus 
+<p>The intention of IP Transparency is to conceal the presence of the reverse proxy so that the origin server observes that the IP packets originate from the client’s IP address. IP Transparency can be used with TCP‑based and UDP‑based protocols.</p>
+
+<p>In short here you're spoofing the source address of upstream traffic by including the transparent parameter to the proxy_bind directive. Most commonly, you set the source address to that of the remote client:</p>
+
+<p>Now the challenge here is to correctly handle the conneciton details, in other words you need to ensure that response (egress) traffic to the remote client is correctly handled. The response traffic must be routed to the NGINX Plus reverse proxy, and NGINX Plus must terminate the TCP connection. NGINX Plus then sends the response traffic to the remote client using the client TCP connection:</p>
+		</aside>
+	</section>
+	<section>
+		<h3>IP Transparency Diagram</h3>
+		<center><img src="assets/images/ip-transparency-packet-flow.png" style="border:none; background:none; width:100%"></center>
+		<div style="text-align:center;"><small>Documentation: <a href="https://www.nginx.com/blog/ip-transparency-direct-server-return-nginx-plus-transparent-proxy/" target="_blank">IP Transparency</a></small></div>
+		<div style="text-align:center;"><small>Documentation: <a href="https://www.nginx.com/blog/ip-transparency-direct-server-return-nginx-plus-transparent-proxy/#upstream-reach-external" target="_blank">Masquerading Traffic</a></small></div>
+		<aside class="notes">
+<p>So looking at it a little deeper, The IP Transparency mode of operation uses the TPROXY kernel module, which is a standard feature of most modern Linux kernels. You need to make several configuration changes:</p>
+<ol>
+
+<li>On the NGINX Plus server, configure the worker processes to run as root, so that they can bind upstream sockets to arbitrary addresses. In the main (top‑level) context in /etc/nginx/nginx.conf, we can include the user directive to set the NGINX Plus worker processes’ ID to root:</li>
+
+<li>On the NGINX Plus server, ensure that each connection originates from the remote client address (Step 2 in the diagram). Add the proxy_bind directive with the transparent parameter to the configuration for the virtual server:</li>
+
+<li>And on the upstream servers we have to configure the routing so that all return traffic is forwarded to NGINX.</li>
+<li>Remove any pre‑existing default routes, and check that the routing table looks sensible:</li>
+<li>If your upstream servers need to be able to connect to external servers, you need to configure the new NGINX Plus gateway to forward and masquerade traffic </li>
+
+<li>On the NGINX Plus server, we also need to configure the TPROXY kernel module to capture the return packets from the upstream servers and deliver them to NGINX Plus (Step 5 in the diagram).
+
+In the example in the documentation, we run the iptables and ip rule commands to capture all TCP traffic on port 80 from the servers represented by an IP range</li>
+
+</ol>
+<p>As you can gather based on this diagram, IP transparency is very complicated, so I recommend setting up a test project to configure this setup, and also make sure you have control over the upstream servers so you can congifure the necessary ip routing capabilities you may need</p>
+
 		</aside>
 	</section>
 
