@@ -65,39 +65,9 @@
                 </p>
               </section>
 
-              <section>
- <!--IF JACOB IS TEACHING-->
-
-		<!--<h3>Trainer Intro</h3>
-
-                    <div style="float:left;width:50%;" class="centered">
-                      <p>
-                      <strong>Jacob Teal</strong>
-                      <p>Technology Consultant</p>
-                      <p>B.A. Computational Mathematics</p>
-                      <p><a href="mailto:jacob.teal@servicerocket.com">jacob.teal@servicerocket.com</a></p>
-					  </p>
-                    </div>
-
-                    <div style="float:right;width:40%;padding-right:0px;">
-                      <img src="assets/images/starfish.png" style="border:0;background:none; left:0; top:0;">
-                    </div>
-				</section>
-
-              <section>
-                <h3>Course Administration</h3>
-                <ul>
-                  <li>This session is ~3 hours long</li>
-                  <ul><li>10 min. breaks every hour</li></ul>
-                  <li>Slides, demonstrations and exercises</li>
-                  <li>PDF copy of the materials is available</li>
-                  <li>Ask questions at any time</li>
-                  <ul><li>Use the chat window</li></ul>
-                </ul>
-              </section>-->
  <!--IF James IS TEACHING-->
            
-              
+			<section>              
 					<h3>Trainer Intro</h3>
 
                     <div style="float:left;width:50%;" class="centered">
@@ -157,7 +127,7 @@ For those of you using Windows, you’ll want to a Linux OS on a virtual machine
               </section>
 
 	      <section>
-		<h3>Log Into AWS</h3>
+		<h3>Log Into VM</h3>
 		<p>If you haven't done so already, please take the time to SSH into your EC2 Instances (Windows users use <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html" target="_blank">PuTTY</a>).</p>
 		<p>Check your email for the login credentials, check your spam folder!</p>
 		<pre><code class="linux" data-trim contenteditable>
@@ -177,7 +147,7 @@ For those of you using Windows, you’ll want to a Linux OS on a virtual machine
                 <h3>Agenda</h3>
 
                 <div style="text-align:left;">
-                    <img src="assets/images/NGINXAdvancedAgenda1.png" style="border:0;background:none; left:0; top:0;">
+                    <img src="assets/images/AdvLBAgenda.png" style="border:0;background:none; left:0; top:0;">
                 </div>
 		
 		<aside class="notes">
@@ -192,11 +162,12 @@ For those of you using Windows, you’ll want to a Linux OS on a virtual machine
 
                 <section>
                   <h3>Module Objectives</h3>
-                  <p>This module enables you to:</p>
+                  <p>This module reviews the following topics:</p>
                   <ul>
                     <li>Configuration Overview</li>
-                    <li>Hardware Migration</li>
-                    <li>Error Pages</li>
+                    <li>Selection Algorithms</li>
+                    <li>Hardware Migration for F5/Netscaler</li>
+                    <li>Extended Status module for monitoring</li>
 		  </ul>
                   <aside class="notes"></aside>
                 </section>
@@ -242,6 +213,17 @@ server {
 			<aside class="notes"></aside>
 		</section>
 
+		<section>
+			<h3>Selection Algorithms</h3>
+			<ul>
+				<li>weighted-round-robin (default)</li>
+				<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ip_hash</span></pre> & <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">hash</span></pre></li>
+				<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">least_conn</span></pre></li>
+				<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">least_time</span></pre></li>
+			</ul>
+			<aside class="notes"></aside>
+		</section>
+
 		<section data-state="lab">
 		  <h3>Lab 1.1: Configure a New Upstream</h3>
 		  <ol>
@@ -268,7 +250,7 @@ server {
 
 		</section>
 
-		<section>
+		
 			<section>
 			<h3>Migrating from Hardware</h3>
 			<ul>
@@ -276,9 +258,9 @@ server {
 				<li>Can work in parallel with legacy hardware</li>
 				<li>Terminology Differences</li>
 				<ul>
-					<li>NSIP, SNIP = Host IP</li>
-					<li>VIP = Virtual IP address</li>
-					<li>Monitor = <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">health_check</span></pre></li>
+					<li>NSIP, SNIP, Self-Ip etc.</li>
+					<li>VIP, Management IP, Virtual Servers</li>
+					<li>Monitor, High Availability, iRules, CLI</li>
 				</ul>
 			</li>
 		</ul>
@@ -286,62 +268,126 @@ server {
 		</section>
 
 		<section>
-			<h3>Deployment Scenario 1</h3>
-			<center><p>NGINX does ALL Load Balancing</p></center>
-			<center><img src="assets/images/deployment1.png" style="border:0; background:none; width:80%"></center>
+		<section>
+			<h3>Migrating from F5</h3>
+			 <table style ="width:100%; color:rgb(255,255,255); display:inline;" >
+        <tr>
+          <th>F5 BIG-IP LTM</th>
+          <th>NGINX+</th>
+        </tr>
+        <tr class="fragment" data-fragment-index="0">
+          <td>Self-IP address</td>
+          <td>N/A NGINX uses underlying OS networking</td>
+        </tr>
+        <tr class="fragment" data-fragment-index="1">
+		  <td>Management IP addresses and port</td>
+          <td>Linux host IP (primary interface)</td>
+        </tr>
+         <tr class="fragment" data-fragment-index="2">
+		  <td>Virtual Server</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">location</span></pre></td>
+        </tr>
+        <tr class="fragment" data-fragment-index="3">
+		  <td>Pool and node list</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream</span></pre></td>
+        </tr>
 
+        <tr class="fragment" data-fragment-index="4">
+		  <td>iRules</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre>, <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">location</span></pre>, NGINX Lua, or nginScript modules</td>
+        </tr>
+
+        <tr class="fragment" data-fragment-index="5">
+		  <td>High Availability</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx-ha-keepalived</span></pre></td>
+        </tr>
+    </table>
+    <div style="text-align:center;"><small>Documentation: <a href="Migrating Layer 7 Logic from F5 iRules and Citrix Policies to NGINX and NGINX Plus" target="_blank">Migrating Layer 7 Logic</a></small></div>
 			<aside class="notes">
-				<p>Clients connect directly to NGINX Plus which then acts as a reverse proxy, load balancing requests to pools of backend servers. This scenario has the benefit of simplicity with just one platform to manage, and can be the end result of a migration process that starts with one of the other deployment scenarios we will discuss next. <p>
+<ul>
+	<li><strong>Self‑IP address</strong> – The primary interface that listens to incoming client‑side data plane traffic on a specific VLAN. It is a specific IP address or subnet on a specific NIC associated with that VLAN or a VLAN group.</li>
 
-				<p>If SSL/TLS is being used, NGINX Plus can offload SSL/TLS processing from the backend servers. This not only frees up resources on the backend servers, but centralizing SSL/TLS processing also increases SSL/TLS session reuse. Creating SSL/TLS sessions is the most CPU‑intensive part of SSL/TLS processing, so increasing session reuse can have a major positive impact on performance.</p>
+<li>In NGINX Plus, self IP addresses most directly map to the primary host interface used by NGINX Plus to manage traffic‑plane application data. Self IP addresses aren't a necessary concept in an NGINX Plus. NGINX Plus uses the underlying OS networking for management and data‑traffic control.</li>
+<li><strong>Management IP address and port</strong> – The IP address:port combinations on a BIG‑IP LTM appliance are used to administer it via the GUI and/or whatever remote SSH access. The NGINX Plus equivalent is the Linux host IP address, typically the primary host interface. If you need to separate remote access from the application traffic, it is possible to use separate IP addresses and/or NICs for management access to the Linux host where NGINX Plus is running,</li>
+<li><strong>Virtual server</strong> – The IP address:port combination used by BIG‑IP LTM as the public destination IP address for the load‑balanced applications. This is the IP‑address portion of the virtual server that is associated with the domain name of a frontend application and the port that’s associated with the service (such as port 80 for HTTP applications). This address handles client requests and shifts from the primary device to the secondary device in the case of a failover.</li>
+<li>Virtual servers in NGINX Plus are configured using a server block. The listen directive in the server block specifies the IP address and port for client traffic.</li>
+<li><strong>Pool and node list</strong> – A pool is a collection of backend nodes, each hosting the same application or service, across which incoming connections are load balanced. Pools are assigned to virtual servers so BIG‑IP LTM knows which backend applications to use when a new request comes into a virtual server. The term "node list" refers to an array of distinct services that all use the same traffic protocol and are hosted on the same IP address, but listen on different port numbers (for example, three HTTP services at 192.168.10.10:8100, 192.169.10.10:8200, and 192.168.10.10:8300).</li>
 
-<p>Both NGINX and NGINX Plus can be used as a cache for static and dynamic content, and NGINX Plus adds the ability to purge items from the cache, especially useful for dynamic content.</p>
+<li>NGINX Plus flattens these concepts with upstream configuration blocks, which also define the load‑balancing and session‑persistence method for the virtual server. NGINX Plus doesn't need node lists, because the standard upstream block configuration can accommodate multiple services on the same IP address.</li>
 
-<p>NGINX Plus offers additional ADC functions, such as application health checks, session persistence, response rate limiting, bandwidth limiting, connection limiting, and more.</p>
+<li><strong>iRules</strong> – iRules is an event‑driven, content‑switching, and traffic‑manipulation engine (based on TCL)  BIG‑IP LTM uses to control all aspects of data‑plane traffic. Becuase they are event-driven they fire for each new connection when certain criteria are met, such as when a new HTTP request is made to a virtual server or when a server sends a response to a client.</li>
 
-<p>To support high availability (HA) in this scenario requires clustering of the NGINX Plus instances.</p>
+<li>NGINX Plus natively handles this sort of content switching and HTTP session manipulation, which eliminates the need to explicitly migrate most context‑based iRules and those which deal with HTTP transactions such as header manipulation. Most context‑based iRules can be translated to server and location blocks, and more complex iRules that cannot be duplicated with NGINX Plus directives and configuration block can be implemented with the NGINX Lua or nginScript modules. For more information on translating iRules to NGINX Plus content rules, click on the doc link at the bottom of the page. (see Migrating Layer 7 Logic from F5 iRules and Citrix Policies to NGINX and NGINX Plus on the NGINX blog.)</li>
+
+<li><strong>High availability</strong> – Conceptually, BIG‑IP LTM and NGINX Plus handle high availability (HA) in the same way. Each instance of NGINX Plus can function as an active or passive instance, and when the active instance goes down the passive instance takes over the virtual server addresses (thus becoming the active instance). With NGINX Plus, a separate software package called nginx‑ha‑keepalived handles the virtual server and failover process for a pair of NGINX Plus servers. BIG‑IP LTM uses a built‑in HA mechanism and each active‑passive pair shares a floating “virtual” IP address which maps to the currently active instance.</li>
+
+<li>Active‑active configurations are also possible, both on‑premises with the nginx‑ha‑keepalived package and on the Google Cloud Platform. For more information on configuring the nginx‑ha‑keepalived package and other load‑balancing architectural models, see the NGINX Plus Admin Guide.</li>
+
+</ul>
+			</aside>
+		</section>
+
+		
+		<section>
+			<h3>Converting F5 Configurations</h3>
+			<pre><code class="linux" data-trim contenteditable>
+				# create pool test_pool members add { 10.10.10.10:80 10.10.10.20:80 }
+# create virtual test_virtual { destination 192.168.10.10:80 pool test_pool source-address-translation { type automap } ip-protocol tcp profiles add { http } }
+# save sys config
+			</code></pre>
+			<pre><code class="linux" data-trim contenteditable>
+				upstream test_pool {
+    server 10.10.10.10:80;
+    server 10.10.10.20:80;
+}
+
+server {
+    listen 192.168.10.10:80;
+
+    location / {
+        proxy_pass http://test_pool;
+    }
+    ...
+}
+			</code></pre>
+			
+			<aside class="notes">
+Let's assume we're using the TMSH CLI command, along with the tmos.ltm location for this guide. Virtual servers are the primary listeners for BIG-IP LTM and NGINX Plus, but the config syntax for defining them is quite different. In this example a virtual server at 192.168.10.10 listens on port 80 for all incoming HTTP traffic, and distributes incoming traffic between the two backend application servers listed in the test_pool upstream group.
 			</aside>
 		</section>
 
 		<section>
-			<h3>Deployment Scenario 2</h3>
-			<center><p>NGINX Works in Parallel with Legacy Hardware</p></center>
-			<center><img src="assets/images/nginxside3.png" style="border:0; background:none; width:80%"></center>
+			<h3>Converting F5 SSL Offload</h3>
+			<pre><code class="linux" data-trim contenteditable>
+				# create pool ssl_test_pool members add { 10.10.10.10:443 10.10.10.20:443 } 
+# create virtual test_ssl_virtual { destination 192.168.10.10:443 pool ssl_test_pool source-address-translation { type automap } ip-protocol tcp profiles add { http } }
+# save /sys config
+# create profile client-ssl test_ssl_client_profile cert test.crt key test.key
+# modify virtual test_ssl_virtual profiles add { test_ssl_client_profile }
+# save /sys config
+# create profile server-ssl test_ssl_server_profile cert test.crt key test.key
+# modify virtual test_ssl_virtual profiles add { test_ssl_server_profile }
+# save /sys config
+			</code></pre>
+			<pre><code class="linux" data-trim contenteditable>
+				upstream ssl_test_pool {
+    server 10.10.10.10:443;
+    server 10.10.10.20:443;
+}
 
-			<aside class="notes">
-<p>NGINX Plus is introduced to load balance new applications in an environment where a legacy hardware appliance continues to load balance existing applications.</p>
-
-<p>This scenario can be applied in a data center where both the hardware load balancers and NGINX Plus reside, or the hardware load balancers might be in a legacy data center while NGINX Plus is deployed in a new data center or a cloud.</p>
-
-<p>The usual reason for deploying NGINX in this way is that a company wants to move to a more modern software‑based platform but does not want to rip and replace all of its legacy hardware load balancers. </p>
-			</aside>
-		</section>
-
-		<section>
-			<h3>Deployment Scenario 3</h3>
-			<center><p>NGINX Sits behind Legacy Hardware</p></center>
-			<center><img src="assets/images/nginxbehind.png" style="border:0; background:none; width:80%"></center>
-
-			<aside class="notes">
-
-<p>NGINX Plus is added to an environment with a legacy hardware‑based load balancer, but here it sits behind the legacy load balancer. Clients connect to The hardware‑based load balancer accepts client requests and load balances them to a pool of NGINX Plus instances, which load balance them across the group of actual backend servers. In this scenario NGINX Plus performs all Layer‑7 application load balancing and caching.</p>
-
-<p>Because the NGINX Plus instances are being load balanced by the hardware load balancer, HA can be achieved by having the hardware load balancer do health checks on the NGINX Plus instances and stop sending traffic to instances that are down.</p>
-
-<p><strong>disadvantages</strong>: There can be multiple reasons for deploying NGINX Plus in this way. One is because of corporate structure. In a multi‑tenant environment where many internal application teams share a device or set of devices, the hardware load balancers are often owned and managed by the network team. The application teams probably would like access to the load balancers to add application‑specific logic, but the complexity of true multi‑tenancy means that even sophisticated solutions can still not provide complete isolation between one application and another. If the application teams were given free access to shared devices, one team might make configuration changes that negatively impact other teams.</p>
-
-<p>To avoid the potential problems, the network team often retains sole control over the hardware load balancers. The application teams have to submit requests to make any configuration changes. In addition, because of the potential for configuration conflicts between teams, the network team is likely to limit which advanced ADC features are exposed, meaning that application teams can’t take advantage of all the functionally available on the hardware load balancer.</p>
-
-<p>One solution to this problem is to deploy a set of smaller load balancers, such as NGINX Plus, so that each application team can have its own. Completely isolated from one another, the application teams can each take full advantage of all the features they need without risking negative consequences for other teams. It’s not cost effective to give each application team a set of hardware appliances, so this a great use case for a software‑based load balancer like NGINX Plus.</p>
-
-<p>The hardware load balancers remain in place, still owned and managed by the network team, but they no longer have to deal with complex multi‑tenant issues or application logic; their only job is to get the requests to the right NGINX Plus instances where the application logic resides, and NGINX Plus routes the requests to the right backend servers. This provides the network team with the control they need while also enabling the application teams to take full advantage of the ADC functionality.</p>
-			</aside>
-		</section>
+server {
+    listen 192.168.10.10:443 ssl;
+    ssl_certificate     /etc/nginx/ssl/test.crt;
+    ssl_certificate_key /etc/nginx/ssl/test.key;
+    location / {
+        proxy_pass http://ssl_test_pool;
+    }
+}
+			</code></pre>
+		<aside class="notes"></aside>
 	</section>
-
-		<section>
-			<section>
-			<h3>Configuration Translations</h3>
+	<section>
+			<h3>iRule Translations</h3>
 			<ul>
 				<li>Request Redirect: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">return</span></pre></li>
 				<li>Request Rewrite: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">rewrite</span></pre></li>
@@ -419,9 +465,164 @@ To rewrite HTTP responses with NGINX Plus, use the sub_filter directive. It t
 
 			</aside>
 		</section>
+</section>
+	
+	<section>
+		<section>
+			<h3>Migrating from NetScaler</h3>
+			 <table style ="width:100%; color:rgb(255,255,255); display:inline;" >
+        <tr>
+          <th>NetScaler</th>
+          <th>NGINX+</th>
+        </tr>
+        <tr class="fragment" data-fragment-index="0">
+          <td>NetScaler IP (NSIP)</td>
+          <td>NGINX+ host IP</td>
+        </tr>
+        <tr class="fragment" data-fragment-index="1">
+		  <td>Subnet IP (SNIP)</td>
+          <td>NGINX+ host IP</td>
+        </tr>
+         <tr class="fragment" data-fragment-index="2">
+		  <td>Virtual IP (VIP)</td>
+          <td>Same Concept</td>
+        </tr>
+        <tr class="fragment" data-fragment-index="3">
+		  <td>Virtual Servers</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre>, <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server_name</span></pre>, and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">location</span></pre></td>
+        </tr>
+
+        <tr class="fragment" data-fragment-index="4">
+		  <td>Server, Service, Service Group</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream</span></pre></td>
+        </tr>
+
+        <tr class="fragment" data-fragment-index="5">
+		  <td>High Availability</td>
+          <td><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx-ha-keepalived</span></pre></td>
+        </tr>
+    </table>
+    <div style="text-align:center;"><small>Documentation: <a href="Migrating Layer 7 Logic from F5 iRules and Citrix Policies to NGINX and NGINX Plus" target="_blank">Migrating Layer 7 Logic</a></small></div>
+			<aside class="notes">
+<ul>
+<li>NetScaler IP address (NSIP) – Management IP address of a specific NetScaler appliance. The NGINX Plus equivalent is the host IP address of the NGINX Plus instance.</li>
+<li>Subnet IP address (SNIP) – The source (client) IP address seen by backend servers in the load balancing configuration. By default, the NGINX Plus equivalent is the host IP address of the NGINX Plus instance as well.</li>
+
+<li>Both NGINX Plus and NetScaler use their routing table to choose the best IP address to use. With NetScaler, you manage the routing table in the NetScaler CLI or GUI, but with NGINX Plus you need to edit the system‑level routing for your Linux or FreeBSD OS. You can also use the proxy_bind directive in the NGINX Plus configuration to specify the source address used for a specific application.</li>
+<li>Virtual IP address (VIP) – Address advertised to clients for the service provided by the backend servers. The VIP functions in the same way for both NetScaler and NGINX Plus: it shifts from the primary device or instance to the secondary in the case of a failover.</li>
+<li>Virtual Servers -- NetScaler uses only the combination of IP address and port to select the virtual server for a request. If you want to consider information in the Host header as well, you use AppExpert policies or a Content Switch Virtual Server to inspect it.</li>
+
+<li>In contrast, the NGINX Plus definition of a virtual server in a server block can include both IP address‑port combinations and values in the Host header. Include the server_name directive to specify the values to match in the Host header. The list of parameters to the server_name directive can include multiple hostnames, wildcards, and regular expressions. You can include multiple server_name directives and multiple listening IP address‑port combinations within one NGINX Plus server block.</li>
+<li>Server, Service, Service Group -- It is straightforward to migrate the NetScaler entities that make up Services and Service Groups to NGINX Plus. NetScaler uses three major entity types:
+	<ul>
+<li>Server – IP address or hostname of a specific backend server</li>
+<li>Service – Association of a server entity with a listening port and monitor</li>
+<li>Service Group – Association of a pool of server entities and listening ports with a monitor</li>
+</ul>
+</li>
+<li>NGINX Plus uses the upstream block to represent a pool of backend (upstream) application servers. In the most basic configuration, a server directive for each server specifies its IP address or hostname.</li>
+</ul>
+<p>For more information about how to migrate specific logic, check the article link at the bottom of the page</p>
+			</aside>
+		</section>
+<section>
+			<h3>Converting NetScaler Configurations</h3>
+			<pre><code class="linux" data-trim contenteditable>
+				add lb vserver myvserver HTTP 10.0.0.99 80
+			</code></pre>
+			<pre><code class="linux" data-trim contenteditable>
+			server {
+    listen 10.0.0.99:80;
+    server_name .example.com;
+    ...
+}
+			</code></pre>
+			
+			<aside class="notes">
+				Here is an example of a simple NetScaler configuration
+			</aside>
+		</section>
+		<section>
+			<h3>Converting NetScaler Service Group Entities</h3>
+			<pre><code class="linux" data-trim contenteditable>
+				add serviceGroup myapp HTTP
+bind serviceGroup myapp 10.0.0.100 80
+bind serviceGroup myapp 10.0.0.101 80
+bind serviceGroup myapp 10.0.0.102 80
+			</code></pre>
+			<pre><code class="linux" data-trim contenteditable>
+			upstream myapp {
+    server 10.0.0.100:80;
+    server 10.0.0.101:80;
+    server 10.0.0.102:80;
+}
+			</code></pre>
+<div style="text-align:center;"><small>Documentation: <a href="https://www.nginx.com/resources/deployment-guides/migrating-load-balancer-configuration-netscaler-nginx-plus/#convert-configuration" target="_blank">Converting NetScaler</a></small></div>
+			
+			<aside class="notes">
+				The following load‑balancer configuration examples define a server pool called myapp with three servers in it. The top example is NetScaler, the bottom is NGINX+ For more information on NetScaler translations and guides check the documentation link at the bottom of the page.
+			</aside>
+		</section>
 	</section>
 
+	
 		<section>
+			<h3>Deployment Scenario 1</h3>
+			<center><p>NGINX does ALL Load Balancing</p></center>
+			<center><img src="assets/images/deployment1.png" style="border:0; background:none; width:80%"></center>
+
+			<aside class="notes">
+				<p>Clients connect directly to NGINX Plus which then acts as a reverse proxy, load balancing requests to pools of backend servers. This scenario has the benefit of simplicity with just one platform to manage, and can be the end result of a migration process that starts with one of the other deployment scenarios we will discuss next. <p>
+
+				<p>If SSL/TLS is being used, NGINX Plus can offload SSL/TLS processing from the backend servers. This not only frees up resources on the backend servers, but centralizing SSL/TLS processing also increases SSL/TLS session reuse. Creating SSL/TLS sessions is the most CPU‑intensive part of SSL/TLS processing, so increasing session reuse can have a major positive impact on performance.</p>
+
+<p>Both NGINX and NGINX Plus can be used as a cache for static and dynamic content, and NGINX Plus adds the ability to purge items from the cache, especially useful for dynamic content.</p>
+
+<p>NGINX Plus offers additional ADC functions, such as application health checks, session persistence, response rate limiting, bandwidth limiting, connection limiting, and more.</p>
+
+<p>To support high availability (HA) in this scenario requires clustering of the NGINX Plus instances.</p>
+			</aside>
+		</section>
+
+		<section>
+			<h3>Deployment Scenario 2</h3>
+			<center><p>NGINX Works in Parallel with Legacy Hardware</p></center>
+			<center><img src="assets/images/nginxside3.png" style="border:0; background:none; width:80%"></center>
+
+			<aside class="notes">
+<p>NGINX Plus is introduced to load balance new applications in an environment where a legacy hardware appliance continues to load balance existing applications.</p>
+
+<p>This scenario can be applied in a data center where both the hardware load balancers and NGINX Plus reside, or the hardware load balancers might be in a legacy data center while NGINX Plus is deployed in a new data center or a cloud.</p>
+
+<p>The usual reason for deploying NGINX in this way is that a company wants to move to a more modern software‑based platform but does not want to rip and replace all of its legacy hardware load balancers. </p>
+			</aside>
+		</section>
+
+		<section>
+			<h3>Deployment Scenario 3</h3>
+			<center><p>NGINX Sits behind Legacy Hardware</p></center>
+			<center><img src="assets/images/nginxbehind.png" style="border:0; background:none; width:80%"></center>
+
+			<aside class="notes">
+
+<p>NGINX Plus is added to an environment with a legacy hardware‑based load balancer, but here it sits behind the legacy load balancer. Clients connect to The hardware‑based load balancer accepts client requests and load balances them to a pool of NGINX Plus instances, which load balance them across the group of actual backend servers. In this scenario NGINX Plus performs all Layer‑7 application load balancing and caching.</p>
+
+<p>Because the NGINX Plus instances are being load balanced by the hardware load balancer, HA can be achieved by having the hardware load balancer do health checks on the NGINX Plus instances and stop sending traffic to instances that are down.</p>
+
+<p><strong>disadvantages</strong>: There can be multiple reasons for deploying NGINX Plus in this way. One is because of corporate structure. In a multi‑tenant environment where many internal application teams share a device or set of devices, the hardware load balancers are often owned and managed by the network team. The application teams probably would like access to the load balancers to add application‑specific logic, but the complexity of true multi‑tenancy means that even sophisticated solutions can still not provide complete isolation between one application and another. If the application teams were given free access to shared devices, one team might make configuration changes that negatively impact other teams.</p>
+
+<p>To avoid the potential problems, the network team often retains sole control over the hardware load balancers. The application teams have to submit requests to make any configuration changes. In addition, because of the potential for configuration conflicts between teams, the network team is likely to limit which advanced ADC features are exposed, meaning that application teams can’t take advantage of all the functionally available on the hardware load balancer.</p>
+
+<p>One solution to this problem is to deploy a set of smaller load balancers, such as NGINX Plus, so that each application team can have its own. Completely isolated from one another, the application teams can each take full advantage of all the features they need without risking negative consequences for other teams. It’s not cost effective to give each application team a set of hardware appliances, so this a great use case for a software‑based load balancer like NGINX Plus.</p>
+
+<p>The hardware load balancers remain in place, still owned and managed by the network team, but they no longer have to deal with complex multi‑tenant issues or application logic; their only job is to get the requests to the right NGINX Plus instances where the application logic resides, and NGINX Plus routes the requests to the right backend servers. This provides the network team with the control they need while also enabling the application teams to take full advantage of the ADC functionality.</p>
+			</aside>
+		</section>
+	
+
+	
+
+		
 			<section>
 			<h3>Searching For Files</h3>
 			<p><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">if</span></pre> directive is bad practice</p>
@@ -503,7 +704,7 @@ location @proxy {
 
 			</aside>
 		</section>
-	</section>
+	
 
 	<section>
 			<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">error_page</span></pre> Directive</h3>
@@ -530,7 +731,7 @@ location /50x.html {
 			<aside class="notes"></aside>
 		</section>
 
-		<section data-state="lab">
+		<!--<section data-state="lab">
 		  <h3>Lab 1.2: I am Error</h3>
 		  <ol>
 		    <li>In <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">main.conf</pre> enable the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">server</span></pre>  to additionally accept <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ipv6</span></pre> traffic</li>
@@ -586,7 +787,7 @@ server {
     </code></pre>
 </aside>
 
-		</section>
+		</section>-->
 	      
 <!--Next Section-->
 
@@ -1024,12 +1225,58 @@ server {
 		<aside class="notes"></aside>
 	</section>
 
-	<section>
+	<!--<section data-state="lab">
+		  <h3>Lab 4: MySQL Load Balancing</h3>
+		  <p>We will use a Gallera cluster to test various TCP load balancing scenarios</p>
+		  <ol>
+		  	<li></li>
+		  	<li></li>
+		  	<li></li>
+		  </ol>
+		 <div style="text-align:center;"><small>Documentation: <a href="https://www.nginx.com/resources/deployment-guides/all-active-nginx-plus-load-balancing-gce/" target="_blank">Admin Guide</a></small></div>
+		  <aside class ="notes">
+<ol>
+</ol>
+
+</aside>
+		</section>-->
+
+
+
+	
+ <!--Next Section-->
+		<section data-background="rgb(20, 149, 62)">
+                  <h2>High Availability</h2>
+                 </section>
+
+         <section>
+                  <h3>Module Objectives</h3>
+                  <p>This module enables you to:</p>
+                  <ul>
+                    <li>Explore <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx-ha-keepalived</span></pre> solution</li>
+                    <li>Understand syntax and basics of VRRP</li>
+                    <li>Enable session affinity to override load balancer</li>
+                    <li>Explore and demo various cloud solutions</li>
+		  </ul>
+                  <aside class="notes"></aside>
+                </section>
+
+                <section>
 		<h3>High Availability</h3>
+		<h4>On Prem</h4>
 		<ol>
-			<li>keepalived</li>
-			<li>Virtual Router Redundancy Protocol (VRRP)</li>
-			<li>Health Check</li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">keepalived</span></pre></li>
+			<ul>
+			<li>Uses Virtual Router Redundancy Protocol (VRRP)</li>
+			
+		</ul>
+		<p></p>
+		</ol>
+		<h4>Cloud Solutions</h4>
+		<ol>
+			<li>Google Cloud Compute</li>
+			<li>Floating IPs (e.g. Digital Ocean)</li>
+			<li>AWS ELB</li>
 		</ol>
 		<aside class="notes">
 <p>The keepalived open source project provides the keepalive daemon for Linux servers,
@@ -1041,7 +1288,55 @@ server {
 	</section>
 
 	<section>
-		<h3>Basic Active-Passive Steps</h3>
+		<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">nginx-ha-keepalived</span></pre></h3>
+		<p>Separate daemon from NGINX</p>
+		<ul>
+		<li>manages shared virtual IPs</li>
+		<li>designates master NGINX node</li>
+		<li>Sends VRRP advertisement messages</li>
+	</ul>
+		<aside class="notes"></aside>
+	</section>
+
+	<section>
+		<h3>VRRP</h3>
+		<ul>
+			<li>health check facility to determine service availability</li>
+			<li>requires 3 consective advertisments from <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">keepalived</span></pre></li>
+			<li>Basic active-passive setup</li>
+		</ul>
+		<aside class="notes"></aside>
+	</section>
+
+	<section>
+		<h3>keepalived Configuration</h3>
+		<ul>
+			<li>Node values
+				<ul>
+					<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">unicast_src_ip</span></pre></li>
+						<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">unicast_peer</span></pre></li>
+					</ul></li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">priority</span></pre></li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">notify</span></pre></li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">vrrp_instance</span></pre></li>
+
+		</ul>
+		<aside class="notes"></aside>
+	</section>
+
+	<section>
+		<h3>How To: Define Mastership</h3>
+		<p>Keepalived has no fencing mechanism</p>
+		<ul>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">chk_nginx_service</span></pre></li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">weight</span></pre></li>
+			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">interval</span></pre>, <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">rise</span></pre>, and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">fall</span></pre></li>
+		</ul>
+		<aside class="notes"></aside>
+	</section>
+
+	<section>
+		<h3>Active-Passive with keepalived</h3>
 		<ol>
 			<li>Install the package and run the setup:
 				<pre><code class="linux" data-trim contenteditable>
@@ -1057,10 +1352,13 @@ vrrp_script chk_nginx_service {
 }
 </code></pre></li>
 </ol>
-<p>Admin Guides:</p>
-<ul>
-<li><a href="https://www.nginx.com/resources/admin-guide/nginx-ha-keepalived/" target="_blank">HA Admin Guide</a> , <a href="https://www.nginx.com/resources/admin-guide/nginx-ha-keepalived/?utm_source=high-availability-in-nginx-plus-r6&utm_medium=blog&utm_campaign=Core+Product#ha_scripts" target="_blank">Control Mastership</a></li>
-</ul>
+<div style="text-align:center;"><small><p>Documentation:</p>
+	<center><ul>
+	<li><a href="https://www.nginx.com/resources/admin-guide/nginx-ha-keepalived/" target="_blank">HA Admin Guide</a></li>
+	<li><a href="https://www.nginx.com/resources/admin-guide/nginx-ha-keepalived/?utm_source=high-availability-in-nginx-plus-r6&utm_medium=blog&utm_campaign=Core+Product#ha_scripts" target="_blank">Control Mastership</a></li>
+</ul></center>
+	</small></div>
+
 
 		<aside class="notes">
 			<ol>
@@ -1076,6 +1374,257 @@ vrrp_script chk_nginx_service {
 </ol>
 		</aside>
 	</section>
+
+<section>
+	<h3>Active-Passive in Cloud</h3>
+		<p>Must have frontend mechnisim to determine mastership</p>
+		<ul>
+			<li>Floating IPs</li>
+			<li>GCE Active LB</li>
+			<li>AWS ELB</li>
+		</ul>
+		<pre><code class="linux" data-trim contenteditable>
+upstream myServers {
+	server backend1; #master
+	server backend2 backup; #slave
+	server backend3 down; #silent partner
+}
+</code></pre>
+</section>
+
+	<section>
+	<h3>Session Affinity</h3>
+	<p>For applications that require state data on backend servers</p>
+	<p>NGINX supports the following methods:</p>
+	<ul>
+		<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky cookie</span></pre></li>
+		<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky learn</span></pre></li>
+		<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky route</span></pre></li>
+	</ul>
+	<aside class="notes">
+<p>Certain applications need to store session and state data on the upstream server
+</p>
+<p>Requests need to be routed to the same server to maintain application functionality
+</p>
+<p>To ensure requests get routed to the same server we use the sticky directive
+Three methods</p>
+<ul>
+<li>Cookies</li>
+<li>Sticky Routes</li>
+<li>Sticky Learn</li>
+</ul>
+</p>
+
+	</aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky cookie</span></pre></h3>
+	<p>Syntax: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky cookie <i>name</i></span></pre></p>
+	<pre><code class="linux" data-trim contenteditable>
+	    upstream myServers {
+	server backend1; #master
+	server backend2 backup; #slave
+	server backend3 down; #silent partner
+	
+	sticky cookie my_srv expires=1h domain=example.com path=/cart;
+}
+
+</code></pre>
+	<aside class="notes">
+<p>Uses a HTTP cookie to identify the upstream server</p>
+<p>Cookie is inserted by NGINX for the first response by the upstream server</p>
+<p>Subsequent requests from the same client will be passed to the same server</p>
+<p>If the server cannot be identified another server will be chosen based on the configured routing method</p>
+	</aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky learn</span></pre></h3>
+	<p>Syntax: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky cookie <i>name</i></span></pre></p>
+	<pre><code class="linux" data-trim contenteditable>
+	    upstream myServers {
+	server backend1; #master
+	server backend2 backup; #slave
+	server backend3 down; #silent partner
+	
+	sticky learn create=$upstream_cookie_sessionid lookup=$cookie_sessionid zone=client_sessions:1m; 
+}
+
+server {
+	location / {
+	    proxy_pass http://myServers;
+}
+}
+
+</code></pre>
+	<aside class="notes">
+<p>Upstream server creates a session, usually via a HTTP cookie or a URL token, and places it in the response</p>
+<p>NGINX will learn which cookie corresponds with which upstream server</p>
+<p>When a client request contains a session cookie, NGINX will forward the request to the appropriate server</p>
+<p>Note: Session identifier does not necessarily have to be a cookie</p>
+	</aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky learn</span></pre> Part 1</h3>
+	<img src="assets/images/stickyLearn1.png" style="border:none; background:none; width:100%">
+		  <aside class="notes">
+	<aside class="notes"></aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky learn</span></pre> Part 2</h3>
+	<img src="assets/images/stickyLearn2.png" style="border:none; background:none; width:100%">
+		  <aside class="notes">
+	<aside class="notes"></aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky learn</span></pre> Part 3</h3>
+	<img src="assets/images/stickyLearn3.png" style="border:none; background:none; width:100%">
+		  <aside class="notes">
+	<aside class="notes"></aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">sticky route</span></pre></h3>
+	<pre><code class="linux" data-trim contenteditable>	
+upstream myServers {
+	zone backend 64k;
+	
+	server backend1; #master
+	server backend2 backup; #slave
+	server backend3 down; #silent partner
+
+	sticky route $route_cookie $route_uri;
+}
+</code></pre>
+		  <aside class="notes">
+<p>Client is assigned a route from the backend proxied server, the first time it sends a request</p>
+<p>Routing information is stored in a cookie or in the URI</p>
+<p>On subsequent requests NGINX will examine the routing information to determine which server to send the request to</p>
+<p>sticky directive uses the route parameter followed by multiple variables</p>
+<p>The value of the variables will determine the route </p>
+<p>The first non empty variable will be used to find the matching server
+</p>
+	</aside>
+</section>
+
+<section>
+	<h3>Tomcat Example</h3>
+	<img src="assets/images/tomcatExample.png" style="border:none; background:none; width:100%">
+	<aside class="notes"></aside>
+</section>
+
+<section>
+	<h3>Routing Variables</h3>
+		<pre><code class="linux" data-trim contenteditable>
+			map $cookie_JSESSIONID $route_cookie {
+	~.+\.(?P&#60;route&#62;\w+)$ $route;
+}
+
+map $request_uri $route_uri {
+	~JSESSIONID=.+\.(?P&#60;route&#62;\w+)$ $route;
+}
+
+</code></pre>
+	<aside class="notes">
+The values of $route_cookie and $route_uri can be determined through the use of a map
+$cookie_JESSIONID looks at the value of the cookie called JESSIONID, which is present in the clients request
+	</aside>
+</section>
+
+<section>
+<section data-state="lab">
+		  <h3>Lab 4.1: Tomcat Route</h3>
+		  <ol>
+		    <li>Open <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">myServers.conf</span></pre> in <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">/etc/nginx/conf.d</span></pre></li>
+		    <li>In the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">http</span></pre> context, create a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;"> log_format</span></pre> called <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;"> sticky</span></pre></li>
+		    <li>Set the new log to:<pre><code class="linux" data-trim contenteditable>"\t Route URI: $route_uri \t Routing Cookie: $route_cookie \t All Cookies: $http_cookie \t ";
+</code></pre> </li> 
+<li> Add the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sticky route</span></pre> directive with two variables: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">$route_cookie $route_uri;</span></pre></li>
+<li>Change the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">access_log</span</pre> format to the new "sticky" <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">log_level</span></pre></li>
+<li>Add the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">route</span></pre> parameter to each upstream like so: <pre><code class="linux" data-trim contenteditable>upstream myServers {
+	zone backend 64k;
+	server &#60;backend_url&#62;:8080 route=backend1;
+	server &#60;backend_url&#62;:8080 route=backend2;
+	server &#60;backend_url&#62;:8080 route=backend3;
+}
+</code></pre> <span style="color:rgb(240,168,40);"><small>ask your instructor about changing the upstream backend urls!!!</small></span></li>
+		</ol>
+		  <aside class ="notes">
+		  	<p>Note to instructor, if you haven't already please spinup the following Tomcat instances that are already pre-configured with the jvmRoute parameter</p>
+		  	<p>Command to access AMI (assuming you have the public key)</p>:
+		  	<pre><code class="linux" data-trim contenteditable>
+		  		ssh -i AWS_service_rocket_key.pub ec2-user@ec2-54-196-159-75.compute-1.amazonaws.com
+		  	</pre></code>
+		  	<p>Spinup the following machines:</p>
+		  	<pre><code class="linux" data-trim contenteditable>
+		  		ngx-launch-class ubuntu-backend1
+ngx-launch-class ubuntu-backend2
+ngx-launch-class ubuntu-backend3
+		  	</code></pre>
+		  	<p>Copy the URL for each machine and give it to the students. You won't have to log into any of these machines so don't worry about the student numbers and passwords</p>
+		  	<p>Lab Solution</p>
+		  	<pre><code class="linux" data-trim contenteditable>
+        log_format sticky  "$request \t Upstream: $upstream_addr \t Route URI: $route_uri \t Routing Cookie: $route_cookie \t All Cookies: $http_cookie \t ";
+
+upstream myServers {
+	server &#60;backend1&#62; route=jvmRoute1;
+	server &#60;backend2&#62; route=jvmRoute2;
+	server &#60;backend3&#62; route=jvmRoute3;
+
+	sticky $route_cookie $route_uri;
+}
+
+map $cookie_jsessionid $route_cookie { 	
+	~.+\.(?P&#60;route&#62;\w+)$ $route; 
+}
+
+map $request_uri $route_uri { 	
+	~jsessionid=.+\.(?P&#60;route&#62;\w+)$ $route; 
+}
+
+server {
+	listen 8080;
+	...
+	access_log /var/log/nginx/upstream.access.log sticky;
+}
+
+
+		  	</pre></code>
+</aside>
+		</section>
+
+<section data-state="lab">
+		  <h3>Lab 4.2: Tomcat Route Test</h3>
+		  <ol>
+		    <li>In your shell, make the following <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">curl</span></pre> requests:<pre><code class="linux" data-trim contenteditable>curl http://&#60;localhost&#62;:8080</code></pre></li>
+		    <li>In a separate shell, run a <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tail -f</span></pre> command on your <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream_access.log</span></pre></li>
+		    <li>Do you notice the IP address changing?</li>
+		    <li>Open a browser, and step through the app via the following URI: <pre><code class="linux" data-trim contenteditable>&#60;localhost&#62;/examples/servlets/servlet/SessionExample</code></pre></li>
+		    <li>Execute the application, and refresh your browser several times. What can you observe in the log now? Which IP address is the request hitting?</li>
+		</ol>
+		  <aside class ="notes">
+		  	<p>Solution</p>
+		  	<p>You can test the below URIs in a browser (recommended so you can show students the source code once you hit the SessionExample), or you can use the curl requests below.</p>
+		  	<p>Make sure you run a tail command to show the new log_format in a separate or tabbed shell</p>
+		  	<pre><code class="linux" data-trim contenteditable>
+		  		sudo tail -f /var/log/nginx/upstream.access.log
+
+
+      curl http://localhost:8080/
+      curl http://localhost:8080/examples/
+      curl http://localhost:8080/examples/servlets/
+      curl http://localhost:8080/examples/servlets/servlet/
+      curl http://localhost:8080/examples/servlets/servlet/SessionExample/
+		  	</pre></code>
+</aside>
+		</section>
+	</section>
+	
+
 
 	<section>
 		<h3>Active-Active</h3>
@@ -1093,7 +1642,7 @@ vrrp_script chk_nginx_service {
 	</section>
 
 	<section data-state="lab">
-		  <h3>Lab 4: All Active GCE LB Demo</h3>
+		  <h3>Lab 4.3: All Active GCE LB Demo</h3>
 
 		 <center><img src="assets/images/AllActive.png" style="border:0; background:none; width:50%"></center>
 		 <div style="text-align:center;"><small>Documentation: <a href="https://www.nginx.com/resources/deployment-guides/all-active-nginx-plus-load-balancing-gce/" target="_blank">Admin Guide</a></small></div>
@@ -1104,207 +1653,246 @@ vrrp_script chk_nginx_service {
 </aside>
 		</section>
 
- <!--Next Section-->
-		<section data-background="rgb(20, 149, 62)">
-                  <h2>Amplify and Dashboards</h2>
-                 </section>
-
-         <section>
-                  <h3>Module Objectives</h3>
-                  <p>This module enables you to:</p>
-                  <ul>
-                    <li>Deploy NGINX Amplify to monitor upstreams</li>
-                    <li>Setup Dashboards and Alerts</li>
-                    <li>Perform Configuration Management</li>
-		  </ul>
-                  <aside class="notes"></aside>
-                </section>
-
-<section>
-		<h3>Monitoring Tools</h3>
-		<p>Examples of Third Party Monitoring Dashboards:</p>
+		<section>
+		<h3>HA with AWS</h3>
+		<ol>
+		<li>Use ELB to combat elastic IPs and control mastership</li>
+		<li>Other solution requires deep knowledge of AWS services and other technologies such as:
 		<ul>
-<li>New Relic</li>
-<li>Data Dog (really cool shirts though…)</li>
-<li>NGINX Amplify</li>
-</ul>
+<li>Corosync and Pacemaker to handle failover</li>
+<li>Designated Elastic IP + Instance Role for HA</li>
+<li>Route 53 for hosted zone, CloudWatch for monitoring</li>
+</ul></li>
+</ol>
+<p></p>
+ <div style="text-align:center;"><small>Whitepaper: <a href="http://d0.awsstatic.com/whitepapers/AWS_NGINX_Plus-whitepaper-final_v4.pdf" target="_blank">NGINX Plus on AWS</a></small>
 
 		<aside class="notes"></aside>
 	</section>
 
-<section>
-		<h3>NGINX Amplify Prerequisites</h3>
-<ol>
-	<li>Latest version of NGINX Plus</li>
-	<li>Running supported Linux distro</li>
-	<li>Supported Python Version</li>
-	<li>Enable the  <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">status</span></pre> module</li>
-</ol>
-
+	<!--<section>
+		<h3>Floating IPs</h3>
+		<p>Digital Ocean floating IPs provide an example setup of <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx-ha-keepalived</span></pre> in cloud droplets</p>
+		<pre><code class="linux" data-trim contenteditable>
+			#Example:
+		</code></pre>
 		<aside class="notes"></aside>
 	</section>
 
 	<section data-state="lab">
-		  <h3>Lab 5.1: Create an Amplify Account</h3>
-		<ol>
-			<li>Visit the <a href="http://amplify.nginx.com/signup?utm_source=setting-up-nginx-amplify-in-10-minutes&utm_medium=blog&_ga=1.125460169.295710940.1477586862" target="_blank">NGINX Amplify Singup Page</a></li>
-			<li> Click "Signup"</li>
-			<li>Fill in addtional information in the dialog box</li>
-			<li>Click "Next"</li>
-		</ol>
-		<aside class="notes"></aside>
-	</section>
-
-<section data-state="lab">
-		  <h3>Lab 5.2: Amplify Agent</h3>
-		<ol>
-			<li>Download the amplify agent to the system you wish to monitor
-				<pre><code class="linux" data-trim contenteditable>
-sudo curl -L -O \
-\ https://raw.githubusercontent.com/nginxinc/nginx‑amplify‑agent/master/packages/install.sh
-</code></pre></li>
-			<li>Run <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">install.sh</span></pre> using your <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">API_KEY</span></pre> (found in "New System" tab)
-			<pre><code class="linux" data-trim contenteditable>
-				# API_KEY=’&#60;your api key&#62;' sh ./install.sh
-			</code></pre></li>
-			<li>Check Systems tab to see the EC2 instance</li>
-		</ol>
-		<aside class="notes"></aside>
-	</section>
-
-<section>
-		<h3>Dashboards</h3>
-			<p>Dashboards allow you to report metrics of incoming data, some options include:</p>
-			<ul>
-<li>Filtering</li>
-<li>Summation</li>
-<li>Aggregation</li>
-</ul>
-		<aside class="notes"></aside>
-	</section>
-
-<section>
-		<h3>Dashboard Example</h3>
-		<p>The Dashboard below shows metrics for 401 codes</p>
-		<center><img src="assets/images/Dashboards.png" style="border:0; background:none; width:70%"></center>
-
-		<aside class="notes"></aside>
-	</section>
-
-<section data-state="lab">
-		  <h3>Lab 5.2: Dashboard Graph</h3>
- <ol>
-		  <li>On the Dashboards drop‑down menu, click "Create Dashboard"</li>
-<li>Click Add Graph </li>
-<li>Enter a "Title" for your graph, such as 404 Errors</li>
-<li>Choose nginx.http.status.4xx metric from the drop‑down menu</li>
-<li>Select an NGINX instance</li>
-<li>Click "Apply Filter", then "Select Filter Key"</li>
-<li>Select $status (to represent status code)</li>
-<li>Type 404 and then select “use 404 as value”</li>
-<li>Click Save. This graph will now appear in a new dashboard called 404 Errors</li>
+		  <h3>Lab 6.1: Floating IPs</h3>
+		  <ol>
+		  	<li></li>
+		  	<li></li>
+		  	<li></li>
 		  </ol>
-		
+
 		  <aside class ="notes">
 <ol>
 </ol>
 
 </aside>
-</section>
-
-<section>
-		<h3>Alerts</h3>
-		<ul>
-		<li>Alert messages can inform you when the value of a certain metric goes outside a specified range</li>
-<li>NGINX Amplify Alert Limitations:</li>
-<li>Alerts based on summaries or averages across systems</li>
-<li>Alerts are not filtered by hostname by default</li>
-</ul>
-		<aside class="notes">
-<p>Properly set up, alerts give you peace of mind, because you learn about unexpected server behavior very quickly. In some cases, an alert can tell you about a problem before it becomes visible to users; in other cases, an alert can ensure that, when a problem is becoming visible to users, you’re not the last to know.</p>
-
-<p>Limitations: </p>
-<ul>
-	<li>Can’t create alerts based on summaries or averages across a set of systems</li>
-	<li>Alerts are not filtered by hostname by default, so an alert tells you when any system goes outside the target range you’ve specified. To make an alert host‑specific, specify the hostname when configuring the alert.</li>
-</ul>
-<p>Every NGINX Amplify account has one predefined alert: you are alerted if NGINX Amplify goes down for more than two minutes. Remove this alert if you don’t need it.</p>
-		</aside>
-	</section>
-
-	<section>
-		<h3>Alert Example</h3>
-		<p>This alert sends an email message when the inbound traffic exceeds 1Mbps</p>
-		<center><img src="assets/images/alertExample.png" style="border:0; background:none; width:70%"></center>
-		<aside class="notes">
-<p>When you select a metric, more fields appear where you choose the factors to compare the metric against, such as a period of time and a threshold value. This alert, triggers when the inbound traffic exceeds 1 Mbps for more than 2 minutes.</p>
-<p>You can optionally, specify one or more of your Systems which the alert applies to. If you don’t specify one system, the alert applies to each of your systems. Then specify the email address or email group where the message is sent to</p>
-		</aside>
-	</section>
-
-<section data-state="lab">
-		  <h3>Lab 5.3: Create an Alert</h3>
- <ol>
-<li>On the Alerts page, select "Add New Alert"</li>
-<li>In the new dialog box, select a metric from the drop‑down menu or type in a text string</li>
-<li>Based on your metric more fields will appear, for this exercise choose the <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">nginx.http.status.4xx</span></pre> metric</li>
-<li>Choose a threshold of 2 minutes</li>
-<li>Choose the System you which to apply the alert</li>
-<li>Enter your email address to receive the notification and click "Create Alert"</li>
-<li>Test <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ec2-server/123.html</span></pre> and refresh the webpage enough times to exceed the threshold. An alert message should’ve been sent to your email.</li>
-
+		</section>
+		<section>
+			  <h3>Lab 6.2: Floating IPs</h3>
+		  <ol>
+		  	<li></li>
+		  	<li></li>
+		  	<li></li>
 		  </ol>
-		
+
 		  <aside class ="notes">
 <ol>
 </ol>
 
 </aside>
-</section>
-
-<section>
-		<h3>Configuration Management</h3>
-		<p>After installation, NGINX Amplify will:</p>
-		<ol>
-<li>Perform analysis of NGINX instance and provide status information</li>
-<li>Breakdown configuration and provide recommendations to improve the performance and reliability of applications</li>
-</ol>
-
-		<aside class="notes">
-<p>When you install the agent software on a server, NGINX Amplify analyzes your configuration and generates a detailed report. The report includes status information and configuration advice:</p>
-<ul>
-<li>Status information. The current state of your NGINX instance, including the NGINX version, an overview of your configuration (including modules), security advisories, virtual servers, and SSL/TLS information.</li>
-<li>Static analysis. A breakdown of your configuration that provides recommendations to improve the performance, security, and reliability of your NGINX‑delivered applications.</li>
-</ul>
+		</section>-->
 
 
-		</aside>
-	</section>
-<section>
 
-		<h3>Reporting</h3>
-		<p>To view NGINX Amplify recommendations, use the Reports tab</p>
-		<center><img src="assets/images/reportExample.png" style="border:0; background:none; width:70%"></center>
-		<aside class="notes"></aside>
-	</section>
+
 <!--Next Section-->
 <section data-background="rgb(20, 149, 62)">
-     <h2>NGINX in Containers</h2>
+     <h2>Service Discovery and Scaling NGINX</h2>
  </section>
 
  <section>
     <h3>Module Objectives</h3>
        <p>This module enables you to:</p>
           <ul>
-    <li>Create NGINX Docker Image</li>
-    <li>Deploy/pull containerized NGINX LB Service</li>
-    <li>Deploy NGINX as Ingress resource in Kubernetes</li>
+          	<li>Understand Service Discovery within the context of Microservice design</li> 
+          	<li>Explore Zookeeper demo</li>
+    		<li>Deploy NGINX using a container service</li>
+   	 		<li>Explore <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">resolver</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">resolve</span></pre> directives</li>
 		  </ul>
-    <aside class="notes"></aside>
+    <aside class="notes">
+
+    </aside>
     </section>
+
+
+    	<section>
+<h3>Monolith to Microservices</h3>
+<div>
+  <div style="float:left;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="0" src="assets/images/monolith.png" style="border:0; background:none; width:100%; position:relative;"></center>
+  <center><p class="fragment" data-fragment-index="0">
+  	Monolithic Architecture</p></center>
+  </div>
+ 
+  <div style="float:right;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="1" src="assets/images/monolith2.png" style="border:0; background:none; width:80.6%; position:relative;"></center>
+  	<center><p class="fragment fade-in" data-fragment-index="1">
+  Microservices Architecture
+  </p></center>
+</div>
+  </section>
+
+	<section>
+		<h3>Service Discovery</h3>
+		<div style="float:left;width:50%;" class="centered">
+		<ul>
+			<li>Services need to know locations of each other</li>
+			<li>Registries work in differenty ways</li>
+			<li>Register and read information</li>
+		</ul>
+	</div>
+	<div style="float:right;width:50%;" class="centered">
+		<center><img src="assets/images/serviceDiscovery1.png" style="border:0; background:none; width:79%"></center>
+	</div>
+	<aside class="notes"></aside>
+</section>
+
+<section>
+	<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">resolver</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">resolve</span></pre></h3>
+	<ul>
+	<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">resolver</span></pre> will re-resolve the domain name</li>
+	<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">valid</span></pre> parameter overrides frequency</li>
+	<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">resolve</span></pre> queries individual servers in an <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">upstream</span></pre></li>
+</ul>
+	<pre><code class="linux" data-trim contenteditable>
+		  		resolver 10.0.0.2 valid=10s;
+#example 1
+server {
+    location / {
+        set $backend_servers backends.example.com;
+        proxy_pass http://$backend_servers:8080;
+    }
+#example 2
+upstream myServers {
+	server backend1 resolve;
+	server backend2 resolve;
+}
+		  	</pre></code>
+	<aside class="notes">
+<p>The resolver directive forces NGINX to re-resolve the domain name after the TTL expires by querying the DNS server</p>
+
+<p>For those who are unfamiliar or want a refresher, the TTL value tells local resolving name servers how long a record should be stored locally before a new copy of the record must be retrieved from DNS. The record storage is known as the DNS cache, and the act of storing records is called caching.</p>
+<ul>
+<li>TTL is part of the Domain Name System.</li>
+<li>TTLs are set by an authoritative nameserver for each resource record.</li>
+<li>TTLs are used for caching purpose. For example, www.dnsknowledge.com TTL value is 86400 seconds, which is 24 hours. The higher a record’s TTL, the longer the information will be cached, and the less queries a client will have to make in order to find the domain.</li>
+<li>TTLs will be used by the resolving name server to speed up name resolving by caching results locally.</li>
+</ul>
+
+<p>The valid parameter overrides TTL value and forces NGINX to re-resolve based on the frequency you set</p>
+<p>Resolver is useful for when you set your domain name to a variable and also when using a service discovery method such as zookeeper or consul</p>
+<p>The resolve parameter acts similar to resolver just for individual servers in your upstream<p>
+</aside>
+</section>
+
+<section>
+		<h3>High Quality LB</h3>
+		<div style="float:left;width:50%;" class="centered">
+		<ul>
+			<li>Precise distribution of traffic to services</li>
+			<li>Developer Configurable</li>
+		</ul>
+	</div>
+	<div style="float:right;width:45%;" class="centered">
+		<center><img src="assets/images/highQualityLB.png" style="border:0; background:none; width:80%"></center>
+	</div>
+	<aside class="notes">
+<ul>
+
+	<li>Once you know where the services are, you need to distribute traffic to them</li>
+<li>Load balancing is simple in its dumbest form</li>
+<li>Complicated in the more sophisticated formats</li>
+<li>And variable as you connect to different types of serivces</li>
+
+</ul>
+	</aside>
+</section>
+
+
     <section>
-    	<h3>What's Docker?</h3>
+    	<h3>Zookeeper Demo</h3>
+    	<p>How the Demo Works</p>
+    	<ul>
+    		<li>Zookeeper performs service discovery</li>
+    		<li>Registrator registers services with Zookeeper</li>
+    		<li>Web app <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">hello</span></pre> simulates backends</li>
+    		<li>NGINX+ load balances the services</li>
+    	</ul>
+    	<p></p>
+    	<center><div style="text-align:center;"><small>GitHub: <a href="https://github.com/nginxinc/NGINX-Demos/tree/master/zookeeper-demo" target="_blank">zookeeper-demo</a></small></div></center>
+    	<aside class="notes"></aside>
+    </section>
+
+    <section>
+    	<h3>Other Service Discovery Demos</h3>
+    	<ul>
+    		<li><a href="https://www.nginx.com/blog/service-discovery-with-nginx-plus-and-consul/" target="_blank">NGINX Plus and Consul</a></li>
+    		<li><a href="https://www.nginx.com/blog/service-discovery-nginx-plus-etcd/" target="_blank">NGINX PLUS with etcd</a></li>
+    	</ul>
+    </section>
+
+    <section>
+    	<h3>Containerized Services</h3>
+    	<ul>
+    		<li>Streamlined Deployment</li>
+    		<li>Relatively Secure</li>
+    		<li>Infrastructure agnostic</li>
+    	</ul>
+    	<aside class="notes">
+    		<ul>
+<li>Easy to pull down and deploy. You can also create image repository for different apps. It's also easily scalable</li>
+<li>Less reliant on virtual machines</li>
+<li>They're relatively secure because their emphermal and usually only communicately with local TCP ports on machine</li>
+<li>Abstract away OS requirements to a certain degree</li>
+</ul>
+    	</aside>
+    </section>
+
+    <section>
+    	<h3>Docker Overview</h3>
+    	<div style="float:left;width:50%;" class="centered">
+    		<ul>
+    			<li>Develop apps along with components</li>
+    			<li>Docker Engine</li>
+    			<ul>
+    			<li>Server</li>
+    			<li>REST API</li>
+    			<li>CLI</li>
+    		</ul>
+    		</ul>
+    	</div>
+    	<div style="float:right;width:40%;padding-right:0px;">
     	<center><img src="assets/images/docker.png" style="border:0; background:none; width:70%"></center>
+    </div>
+    <aside class="notes">
+Docker is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly. With Docker, you can manage your infrastructure in the same ways you manage your applications.
+
+Docker Engine is a client-server application with these major components:
+
+A server which is a type of long-running program called a daemon process (the dockerd command).
+
+A REST API which specifies interfaces that programs can use to talk to the daemon and instruct it what to do.
+
+A command line interface (CLI) client (the docker command).
+
+The CLI uses the Docker REST API to control or interact with the Docker daemon through scripting or direct CLI commands. Many other Docker applications use the underlying API and CLI.
+
+The daemon creates and manages Docker objects, such as images, containers, networks, and volumes.
+    </aside>
     </section>
 
     <section>
@@ -1324,10 +1912,35 @@ sudo curl -L -O \
     </section>
 
     <section>
+    	<h3>Dockerfile Overview</h3>
+    	<p>Dockerfile when used with docker build command, automates command line instructions:</p>
+    	<pre><code class="linux" data-trim contenteditable>
+ FROM ubuntu:12.04
+
+MAINTAINER jtack4970 version: 0.1
+ADD ./mysql-setup.sh /tmp/mysql-setup.sh
+RUN /bin/sh /tmp/mysql-setup.sh
+EXPOSE 3306
+    	</code></pre>
+    	<aside class="notes">
+1. Dockerfiles are always named ‘Dockerfile’ because when the docker build command kicks off it creates a context of all the files in our directory and sub-directories, build daemon will then search for a file called ‘Dockerfile’ to build the image (hopefully in that same directory where you have all the necessary files to build the images)
+2. Each line in a Docker file starts with a command
+
+1. Example:
+    1. FROM command tells Dockerfile on which base image to build our new image ‘from’ (best practices use alpine Linux because it’s small, has a package manager, and allows you to debug containers in prod—it’s also used by default in Docker images)
+    2. MAINTAINER designates the author and maintainer for this docker image
+    3. ADD takes files/directories from our host machine and adds them to the file system of the container at the specified location
+    4. EXPOSE exposes the external facing port of the container image
+    4. ENTRYPOINT (not listed here) sets our container as an executable, so when it starts it will run whatever app you specify
+    	</aside>
+    </section>
+
+    <section>
     	<h3>Docker Commands</h3>
     	<pre><code class="linux" data-trim contenteditable>
 $ docker pull
 $ docker run
+$ docker build
 $ docker create
 $ docker push
 	</code></pre>
@@ -1353,7 +1966,7 @@ $ docker push
  <ol>
 <li>Install Docker and pull NGINX Image
 	<pre><code class="linux" data-trim contenteditable>
-$ sudo apt-get install docker
+$ sudo apt-get install docker.io
 $ sudo docker images
 $ sudo docker pull nginx:1.12.0
 $ sudo docker run -d nginx:1.12.0
@@ -1413,7 +2026,7 @@ $ sudo docker rm -v $(docker ps -a -q)
     <section>
     	<h3>Scaling with Kubernetes</h3>
     	<ul>
-    		<li>Manage Containerized Apps in Cluster</li>
+    		<li>Manage Containerized Services in Cluster</li>
     		<li>Easier App Management
     			<ul>
     				<li>Service Discovery</li>
@@ -1512,7 +2125,7 @@ $ kubectl describe pods &#60;POD NAME&#62;
 </ol>
 </section>
  <section>
-    	<h3>Service Discovery</h3>
+    	<h3>Service Discovery with Kubernetes</h3>
     	<p>Containers, especially in a cluster, have dynamic IPs. A service like Kubernetes can implement service discovery to make sure incoming traffic from Load Balancer is routed correctly</p>
     	<p>OR we can use this:</p>
     	<pre><code class="linux" data-trim contenteditable>
@@ -1538,76 +2151,6 @@ Because both Kubernetes DNS and NGINX Plus (R10 and later) support DNS Service (
 <p>Advanced Use Case of using NGINX as an Ingress ReplicationController</p>
 <div style="text-align:center;"><small>GitHub Repo: <a href="https://github.com/nginxinc/kubernetes-ingress/tree/master/examples/complete-example" target="_blank">NGINX-Ingress</a></small></div>
     </section>
-
-
- <!--Next Section-->
- <section data-background="rgb(20, 149, 62)">
-     <h2>Intro to Microservices</h2>
- </section>
-
- <section>
-    <h3>Module Objectives</h3>
-       <p>This module enables you to:</p>
-          <ul>
-    <li>Explore NGINX API Gateway Topologies</li>
-    <li>Explore Microservices Reference Architecture</li>
-		  </ul>
-    <aside class="notes"></aside>
-    </section>
-
-	<section>
-<h3>Monolith to Microservices</h3>
-<div>
-  <div style="float:left;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="0" src="assets/images/monolith.png" style="border:0; background:none; width:100%; position:relative;"></center>
-  <center><p class="fragment" data-fragment-index="0">
-  	Monolithic Architecture</p></center>
-  </div>
- 
-  <div style="float:right;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="1" src="assets/images/monolith2.png" style="border:0; background:none; width:80.6%; position:relative;"></center>
-  	<center><p class="fragment fade-in" data-fragment-index="1">
-  Microservices Architecture
-  </p></center>
-</div>
-  </section>
-
-	<section>
-		<h3>Service Discovery</h3>
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Services need to know locations of each other</li>
-			<li>Registries work in differenty ways</li>
-			<li>Register and read information</li>
-		</ul>
-	</div>
-	<div style="float:right;width:50%;" class="centered">
-		<center><img src="assets/images/serviceDiscovery1.png" style="border:0; background:none; width:79%"></center>
-	</div>
-	<aside class="notes"></aside>
-</section>
-
-<section>
-		<h3>High Quality LB</h3>
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Precise distribution of traffic to services</li>
-			<li>Developer Configurable</li>
-		</ul>
-	</div>
-	<div style="float:right;width:45%;" class="centered">
-		<center><img src="assets/images/highQualityLB.png" style="border:0; background:none; width:80%"></center>
-	</div>
-	<aside class="notes">
-<ul>
-
-	<li>Once you know where the services are, you need to distribute traffic to them</li>
-<li>Load balancing is simple in its dumbest form</li>
-<li>Complicated in the more sophisticated formats</li>
-<li>And variable as you connect to different types of serivces</li>
-
-</ul>
-	</aside>
-</section>
-
 
 	<section>
 		<h3>Secure and Fast</h3>
@@ -1814,344 +2357,8 @@ You can even add a slow start feature
 	<aside class="notes"></aside>
 </section>
 
-<section data-state="lab">
-		  <h3>Take-Home Lab 6: MRA Deployment</h3>
-		   <div style="float:left;width:45%;" class="centered">
-		 <ol>
-		  <li>Get files from GitHub</li>
-		  <li>Make the Docker Image</li>
-		  <li>Push Docker Image to Docker Hub</li>
-		  <li>Tell DC/OS to pull Docker Image from Docker Hub</li>
-		  <li>Test the site</li>
-		</ol>
-	</div>
-	 <div style="float:right;width:50%;" class="centered">
 
-		<center><img src="assets/images/mraDeployment.png" style="border:0; background:none; width:100%"></center>
-	</div>
-
-		
-		  <aside class ="notes">
-<ol>
-</ol>
-
-</aside>
-</section>
-
-    <!--Next Section-->
- <section data-background="rgb(20, 149, 62)">
-     <h2>Performance Tuning</h2>
- </section>
-
- <section>
-    <h3>Module Objectives</h3>
-       <p>This module enables you to:</p>
-          <ul>
-    <li>Explore NGINX Tunables</li>
-    <li>Explore Kernel Tunables</li>
-    <li>Outline Benchmark Testing</li>
-		  </ul>
-    <aside class="notes"></aside>
-    </section>
-
-    <section>
-		<h3>Diagnostic Tools</h3>
-		<ul>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">netstat</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">ss</span></pre> for network issues</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">top</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">vmstat</span></pre> for CPU and RAM issues</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">iostat</span></pre> for disc I/O</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tail</span></pre> and <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">curl</span></pre> for general testing/troubleshooting</li>
-		</ul>
-		<aside class="notes">
-<p>These are some important tools and counters that will be the first line of defense in diagnosing performance issues
-These will be able to test for things like average load, worker connection and process distribution, idle processes, disc latency, etc.</p>
-		</aside>
-	</section>
-
-
-	<section>
-		<h3>Configuration Pitfalls</h3>
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Redundant directives</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">rewrite</span></pre> vs. <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">return</span></pre></li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">if</span></pre> is f*@!ing evil!</li>
-			<li>Proxying everything</li>
-			<li>Hostname issues</li>
-		</ul>
-		<p></p>
-		<div style="text-align:center;"><small>Common Mistakes<a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls/" target="_blank">...read it....ALL OF IT!</a></small></div>
-	</div>
-	<div style="float:right;width:45%;" class="centered">
-		<center><img src="assets/images/commonPitfalls.png" style="border:0; background:none; width:80%"></center>
-	</div>
-	<aside class="notes">
-<ul>
-	<li>Redundant index and root directives</li>
-<li>Remember if is evil</li>
-<li>Passing uncontrolled requests through gateways (PHP)</li>
-<li>Unnecessary use of rewrite directive</li>
-<li>Proxying everything (not using try_files )</li>
-<li>Hostname resolver issues (i.e. hostname on listen)</li>
-
-
-</ul>
-	</aside>
-</section>
-
-	<section>
-		<h3>Benchmark Tests</h3>
-
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Know Testing Metric</li>
-			<li>Track each change</li>
-			<li>Validate by re-testing</li>
-			<li>No change? Revert!</li>
-			<li>Test Scnearios
-				<ul>
-					<li>Soft (static)</li>
-					<li>Hard (dynamic)</l>
-					</ul></li>
-		</ul>
-	</div>
-	<div style="float:right;width:45%;" class="centered">
-		<center><img src="assets/images/badBenchmark.png" style="border:0; background:none; width:80%"></center>
-	</div>
-		<aside class="notes">
-<ul><li>Set a good benchmark: Know what you’re testing or trying to improve (most testing is reactive).</li>
-<li>Track and document each change.</li>
-<li>Validate findings by re-testing.</li>
-<li>Change one thing at a time.</li>
-<li>Test multiple scenarios and files:</li>
-<li>soft (static file e.g. image).</li>
-<li>heavy (dynamic file e.g. PHP).</li>
-<li>If no significant change...revert.</li>
-</ul>
-
-		</aside>
-	</section>
-
-
-		<section>
-			<h3>Kernel Tunables</h3>
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Varies by System</li>
-			<li>Backup Defaults</li>
-			<li>Tune for Scale</li>
-			<li>When in doubt, enlist the help of NGINX Professional Services</li>
-			</ul>
-	</div>
-	<div style="float:right;width:45%;" class="centered">
-		<center><img src="assets/images/kernelTuning.png" style="border:0; background:none; width:100%"></center>
-	</div>
-		<aside class="notes">
-<ul><li>Kernel parameters vary from system to system</li>
-<li>Backup your defaults via commenting and/or snapshots (stage env)</li>
-<li>Aim for scalability because performance goes hand in hand</li>
-<li>When in doubt, consult your documentation and NGINX technical support</li>
-</ul>
-		</aside>
-	</section>
-
-		<section>
-			<h3>Check Logs</h3>
-		<div style="float:left;width:45%;" class="centered">
-			<p>Keep Checking Messages</p>
-				<ul>
-					<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;"># dmesg -c</span></pre></li>
-					<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;"># tail -f</span></pre><ul>
-
-					<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">/var/log/kern.log</span></pre></li>
-					<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">/var/log/nginx/</span></pre></ul></li>
-				</ul></li>
-	</div>
-	<div style="float:right;width:45%;" class="centered">
-		<center><img src="assets/images/Ed.gif" style="border:0; background:none; width:80%"></center>
-	</div>
-		<aside class="notes">
-		</aside>
-	</section>
-
-	<section>
-		<h3>Ephemeral Ports</h3>
-		<ul>
-			<li>Echo modified range in /proc file system:
-				<pre><code class="linux" data-trim contenteditable>
-			 echo “&#60;min&#62; &#60;max&#62; /proc/sys/net/ipv4/ip_local_port_range
-			</code></pre>
-			</li>
-<li>OR append /etc/sysctl.conf (permanent solution) by adding the line:
-	<pre><code class="linux" data-trim contenteditable>
-	net.ipv4.ip_local_port_range = “ &#60;min value&#62; &#60;max value&#62;”
-</code></pre>
-</li>
-<li>Decrease the active/inactive timeout using:
-	<pre><code class="linux" data-trim contenteditable>
-	 net.ipv4.tcp_fin_timeout
-</code></pre>
-</li>
-</ul>
-
-		<aside class="notes">
-<p>These are the commands to adjust the ephemeral ports, you can append them to system control or using the echo command via the proc file system. The system control method will survive reboots
-</p>
-<h4>Explanation</h4>
-<p>Default TCP port range for outgoing connections is around 32,786-65,536 ports.
-Modify the Linux kernel parameters to increase/decrease local available ports. 
-Ephemeral port exhaustion, system will run out of port numbers
-NGINX Plus by nature is subject to ephemeral port exhaustion and the problems it causes. When NGINX Plus proxies a request to an upstream server, it is the client in the socket-creation process. The default behavior is to bind the socket for the proxied request automatically to a local IP and any ephemeral port available on the host where it is running. If the connection rate is high, i.e. established sockets are moving to waiting state faster than existing sockets are closing, then eventually the available ports are exhausted and new sockets cannot be created.
-Configuring keepalives will allow your connections to be more efficient and reduce overhead thus in turn reducing the chance of emphermal port exhaustion
-</p>
-
-		</aside>
-	</section>
-
-	<section>
-		<h3>File Descriptor Limits</h3>
-		<p>System Wide vs. User Limit</p>
-		<ul>
-			<li>View OS limit
-				<pre><code class="linux" data-trim contenteditable>
-			 # cat /proc/sys/fs/file-max
-			</code></pre>
-			</li>
-<li>Append to sysctl, and restart
-	<pre><code class="linux" data-trim contenteditable>
-		# fs.file-max = &#60;some value&#62;
-# sysctl -p
-</code></pre>
-</li>
-			<li>Adjust User limit on the fly 
-				<pre><code class="linux" data-trim contenteditable>
-	# ulimit -n
-			</code></pre>
-			</li>
-<li>Typical user limit example:
-	<pre><code class="linux" data-trim contenteditable>
-	# ulimit -Sc unlimited; nginx
-</code></pre>
-</li>
-		<aside class="notes">
-			<p>OS level</p>
-			<ul>
-				<li>use the cat command to see your system’s limits (/proc/sys/fs/file-max)</li>
-<li>Set the max number of file-handles that the kernel can manage on a system level.</li>
-<li>generally tune this file to improve the number of open files by increasing the value of /proc/sys/fs/file-max to something reasonable like 256 for every 4M of RAM we have: i.e. for a machine with 128 MB of RAM, set it to 8192 - 128/4=32 32*256=8192.</li>
-</ul>
-
-<p>Ulmit</p>
-<ul>
-	<li>hard limits can only be raised by root (but any process can lower it). Therefore a non-root process cannot overstep a hard limit. This is good for security.</li>
-<li>A soft limit can be changed by the process at any time, which is convenient. This is not good for security.</li>
-<li>However, a typical use case for increasing soft limits on the fly is to disable core dumps (ulimit -Sc 0) while keeping the option of enabling them for a specific process you're debugging ((ulimit -Sc unlimited; myprocess)).
-So in the case of NGiNX it would looks something like this ((ulimit -Sc unlimited; nginx))</li>
-</ul>
-
-
-		</aside>
-	</section>
-
-	<section>
-		<h3>Backlog Queue</h3>
-		<ul>
-		<li>Kernel maintains 2 queues for a given listening socket:
-			<ul>
-	<li>Incomplete connection queue (SYN/received)</li>
-	<li>Complete connection queue (ACK/established)</li>
-</ul></li>
-</ul>
-<pre><code class="linux" data-trim contenteditable>
-	# net.core.somaxconn 
-# net.core.netdev_max_backlog
-</code></pre>
-
-		<aside class="notes">
-To understand the backlog argument, we must realize that for a given listening socket, the kernel maintains two queues: incomplete queue (contains an entry for each SYN that has arrived from a client for which the server is awaiting completion of the TCP three-way handshake. These sockets are in the SYN_RCVD state) and the completed queue (contains an entry for each client with whom the TCP three-way handshake has completed. These sockets are in the ESTABLISHED state).
-Default backlog number is very low, and this is often acceptable because NGINX typically serves content very quickly. However if you’re having a high amount of incoming traffic and your connections are stalling you can tune the settings in the following slides to help.
-Use net.core.somaxconn to increase maximum number of incoming connections—default is 128.
-Example: #net.core.somaxconn = 1024
-Use net.core.netdev_max_backlog to increase the rate the network card buffers packets before offloading to CPU
-Example: # net.core.somax.conn = 65536
-
-		</aside>
-	</section>
-</section>
-
-<section>
-	<section>
-		<h3>NGINX Tunables</h3>
-		<ul>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">worker_rlimit_nofile</span></pre>: adjusts max number of FD each <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">worker_process</span></pre> can use</li>
-			<li>TCP Transport tunables: <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">sendfile</span></pre>, <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tcp_nodelay</span></pre>, <pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tcp_cork</span></pre> (<pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">tcp_nopush</span></pre>)</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">keepalive</span></pre></li>
-		</ul>
-		<aside class="notes"></aside>
-	</section>
-
-	<section>
-		<h3><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 60px;">keepalives</span></pre></h3>
-		<aside class="notes"></aside>
-		<h4>Client Keepalives</h4>
-		<center><img src="assets/images/clientKeepalives.png" style="border:0; background:none; width:79%"></center>
-		<h4>Upstream Keepalives</h4>
-		<pre><code class="linux" data-trim contenteditable>
-		upstream backend {
-    server localhost;
-    keepalive 32;
-}
-server {
-    location / {
-        proxy_pass http://backend;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-    }
-}
-</code></pre>
-
-	</section>
-
-	<section>
-		<h3>Socket Sharding</h3>
-		<div>
-  <div style="float:left;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="0" src="assets/images/lockContention.png" style="border:0; background:none; width:93%; position:relative;"></center>
-  <center><p class="fragment" data-fragment-index="0">
-  	Lock Contention</p></center>
-  </div>
  
-  <div style="float:right;width:50%;" class="centered"><center><img class="fragment" data-fragment-index="1" src="assets/images/socketSharding.png" style="border:0; background:none; width:100; position:relative;"></center>
-  	<pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;"><center><p class="fragment fade-in" data-fragment-index="1">reuseport</p></center></span></pre>
-</div>
-		<aside class="notes"></aside>
-	</section>
-
-	<section>
-		<h3>Worker Tuning</h3>
-		<ul>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">worker_processes</span></pre>: Set how many workers to deploy</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">worker_cpu_affinity</span></pre>: Binds worker to a CPU core</li>
-			<li><pre style="display:inline; color:rgb(240,168,40);"><span style="font-size: 30px;">worker_connections</span></pre>: Set max conn to each worker</li>
-		</ul>
-		<aside class="notes"></aside>
-	</section>
-
-	<section>
-		<h3>Buffers and Timeouts</h3>
-		<div style="float:left;width:50%;" class="centered">
-		<ul>
-			<li>Throughput optimization</li>
-			<li>Speed up client upload/download</li>
-			<li>Can free up backends</li>
-			<li>Important for caching</li>
-			</ul>
-	</div>
-	<div style="float:right;width:50%;" class="centered">
-		<center><img src="assets/images/bufferTimeout.png" style="border:0; background:none; width:100%"></center>
-	</div>
-		<aside class="notes"></aside>
-	</section>
-</section>
                  <!--Next Section-->
 		<section data-background="rgb(20, 149, 62)">
                   <h2>Additional Resources</h2>
