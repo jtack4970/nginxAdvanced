@@ -5,5 +5,6 @@ The lab solutions cover the material for all of the configurations.
 
 They are located in the **conf_examples** folder. There are also other configurations examples that you may find useful.
 
-#Thank You!
+### Thank You!
+
 Thank you for taking the course and don't forget to take the survey at the end of the slide deck!
